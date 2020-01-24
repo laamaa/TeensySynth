@@ -1,7 +1,7 @@
 #include <Audio.h>
 
 // set SYNTH_DEBUG to enable debug logging (1=most,2=all messages)
-#define SYNTH_DEBUG 1
+#define SYNTH_DEBUG 0
 
 // define MIDI channel
 #define SYNTH_MIDICHANNEL 1
@@ -19,11 +19,11 @@
 // gain in final mixer stage for polyphonic mode (4:1)
 // (0.25 is the safe value but larger sounds better :) )
 //#define GAIN_POLY 1.
-#define GAIN_POLY 0.25
+#define GAIN_POLY 0.5
 
 // gain in final mixer stage for monophonic modes
 //#define GAIN_MONO 1.
-#define GAIN_MONO 0.25
+#define GAIN_MONO 0.5
 
 // define delay lines for modulation effects
 #define DELAY_LENGTH (16*AUDIO_BLOCK_SAMPLES)
@@ -40,6 +40,40 @@ short delaylineR[DELAY_LENGTH];
 #define SYNTH_SERIAL Serial
 #include <MIDI.h>
 #endif
+
+// MIDI CC numbers
+#define CC_PORTAMENTO_TIME 5
+#define CC_VOLUME 7
+#define CC_FIX_VOLUME 9
+#define CC_PANORAMA 10
+#define CC_ENV_ATK 12
+#define CC_ENV_REL 13
+#define CC_FLT_FREQ 14
+#define CC_FLT_RES 15
+#define CC_FLT_ATT 16
+#define CC_FLT_MODE 17
+#define CC_POLY_MODE 18
+#define CC_ENV_MODE 19
+#define CC_ENV_DELAY 20
+#define CC_ENV_HOLD 21
+#define CC_ENV_DECAY 22
+#define CC_ENV_SUSTAIN 23
+#define CC_PULSE_WIDTH 24
+#define CC_FLANGER_MODE 25
+#define CC_FLANGER_OFFSET 26
+#define CC_FLANGER_DEPTH 27
+#define CC_FLANGER_FREQ_COARSE 28
+#define CC_FLANGER_FREQ_FINE 29
+#define CC_PB_RANGE 30
+#define CC_SUSTAIN 64
+#define CC_PORTAMENTO 65
+#define CC_PORTAMENTO_CONTROL 84
+#define CC_RESET_ALL 121
+#define CC_ALL_NOTES_OFF 123
+#define CC_OMNI_OFF 124
+#define CC_OMNI_ON 125
+#define CC_MONO_ON 126
+#define CC_POLY_ON 127
 
 //////////////////////////////////////////////////////////////////////
 // Data types and lookup tables
@@ -91,7 +125,7 @@ enum FilterMode_t {
 //////////////////////////////////////////////////////////////////////
 // Global variables
 //////////////////////////////////////////////////////////////////////
-float   masterVolume   = 0.3;
+float   masterVolume   = 0.8;
 uint8_t currentProgram = WAVEFORM_SAWTOOTH;
 
 bool  polyOn;
@@ -258,7 +292,7 @@ void resetAll() {
   panorama       = 0.5;
   pulseWidth     = 0.5;
   pitchBend      = 0;
-  pitchScale     = 1;
+  pitchScale     = 12./2;
   octCorr        = currentProgram == WAVEFORM_PULSE ? 1 : 0;
   
   // filter
@@ -346,6 +380,7 @@ inline void updatePan() {
 }
 
 inline void updateMasterVolume() {
+  /*
   // read the volume knob
   float vol = (float) analogRead(A1) / 1280.0;
   if( fabs(vol-masterVolume) > 0.01) {
@@ -356,6 +391,7 @@ inline void updateMasterVolume() {
     SYNTH_SERIAL.println(vol);
 #endif
   }
+  */
 }
 
 inline void updatePolyMode() {
@@ -570,18 +606,18 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
   switch (control) {
   case 0: // bank select, do nothing (switch sounds via program change only)
     break;
-  case 5: // portamento time
+  case CC_PORTAMENTO_TIME: // portamento time
   {
     float portamentoRange = portamentoStep*portamentoTime;
     portamentoTime = value*50;
     portamentoStep = portamentoRange/portamentoTime;
     break;
   }
-  case 7: // volume
+  case CC_VOLUME: // volume
     channelVolume = value/127.;
     updateVolume();
     break;
-  case 9: // fix volume
+  case CC_FIX_VOLUME: // fix volume
     switch (value) {
     case 0:
       velocityOn = false;
@@ -594,31 +630,31 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
       break;
     }
     break;
-  case 10: // pan
+  case CC_PANORAMA: // pan
     panorama = value/127.;
     updatePan();
     break;
-  case 12: // attack
+  case CC_ENV_ATK: // attack
     envAttack = value*200./127.;
     updateEnvelope();
     break;
-  case 13: // release
+  case CC_ENV_REL: // release
     envRelease = value*200./127.;
     updateEnvelope();
     break;
-  case 14: // filter frequency
+  case CC_FLT_FREQ: // filter frequency
     filtFreq = value/2.5*AUDIO_SAMPLE_RATE_EXACT/127.;
     updateFilter();
     break;
-  case 15: // filter resonance
+  case CC_FLT_RES: // filter resonance
     filtReso = value*4.1/127.+0.9;
     updateFilter();
     break;
-  case 16: // filter attenuation
+  case CC_FLT_ATT: // filter attenuation
     filtAtt = value/127.;
     updateFilterMode();
     break;
-  case 17: // filter mode
+  case CC_FLT_MODE: // filter mode
     if (value < FILTERMODE_N) {
       filterMode = FilterMode_t(value);
     } else {
@@ -626,7 +662,7 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     }
     updateFilterMode();
     break;
-  case 18: // poly mode
+  case CC_POLY_MODE: // poly mode
     switch (value) {
     case 0:
       polyOn = true;
@@ -650,58 +686,58 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     }
     updatePolyMode();
     break;
-  case 19: // envelope mode
+  case CC_ENV_MODE: // envelope mode
     allOff();
     envOn = !envOn;
     updateEnvelopeMode();
     break;
-  case 20: // delay
+  case CC_ENV_DELAY: // delay
     envDelay = value*200./127.;
     updateEnvelope();
     break;
-  case 21: // hold
+  case CC_ENV_HOLD: // hold
     envHold = value*200./127.;
     updateEnvelope();
     break;
-  case 22: // decay
+  case CC_ENV_DECAY: // decay
     envDecay = value*200./127.;
     updateEnvelope();
     break;
-  case 23: // sustain
+  case CC_ENV_SUSTAIN: // sustain
     envSustain = value/127.;
     updateEnvelope();
     break;
-  case 24: // pulse width
+  case CC_PULSE_WIDTH: // pulse width
     pulseWidth = (value/127.)*0.9+0.05;
     updatePulseWidth();
     break;
-  case 25: // flanger toggle
+  case CC_FLANGER_MODE: // flanger toggle
     if (value < 2)
         flangerOn = bool(value);
     else
         flangerOn = !flangerOn;
     updateFlanger();
     break;
-  case 26: // flanger offset
+  case CC_FLANGER_OFFSET: // flanger offset
     flangerOffset = int(value/127.*8)*DELAY_LENGTH/8;
     updateFlanger();
     break;
-  case 27: // flanger depth
+  case CC_FLANGER_DEPTH: // flanger depth
     flangerDepth = int(value/127.*8)*DELAY_LENGTH/8;
     updateFlanger();
     break;
-  case 28: // flanger coarse frequency
+  case CC_FLANGER_FREQ_COARSE: // flanger coarse frequency
     flangerFreqCoarse = value/127.*10.;
     updateFlanger();
     break;
-  case 29: // flanger fine frequency
+  case CC_FLANGER_FREQ_FINE: // flanger fine frequency
     flangerFreqFine = value/127.;
     updateFlanger();
     break;
-  case 30: // pitch range in semitones
+  case CC_PB_RANGE: // pitch range in semitones
     pitchScale = 12./value;
     break;
-  case 64: // sustain/damper pedal
+  case CC_SUSTAIN: // sustain/damper pedal
     if (value > 63) sustainPressed = true;
     else {
       sustainPressed = false;
@@ -711,7 +747,7 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
       } while (++o < end);
     }
     break;
-  case 65: // portamento on/off
+  case CC_PORTAMENTO: // portamento on/off
     if (polyOn) break;
     if (value > 63) {
       portamentoOn = true;
@@ -719,29 +755,29 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     }
     else portamentoOn = false;
     break;
-  case 84: // portamento control (start note)
+  case CC_PORTAMENTO_CONTROL: // portamento control (start note)
     portamentoPos = value;
     break;
-  case 121: // controller reset
+  case CC_RESET_ALL: // controller reset
     resetAll();
     break;
-  case 123: // all notes off
+  case CC_ALL_NOTES_OFF: // all notes off
     allOff();
     break;
-  case 124: // omni off
+  case CC_OMNI_OFF: // omni off
     allOff();
     omniOn = false;
     break;
-  case 125: // omni on
+  case CC_OMNI_ON: // omni on
     allOff();
     omniOn = true;
     break;
-  case 126: // mono
+  case CC_MONO_ON: // mono
     polyOn = false;
     portamentoOn = false;
     updatePolyMode();
     break;
-  case 127: // poly
+  case CC_POLY_ON: // poly
     polyOn = true;
     portamentoOn = false;
     updatePolyMode();
@@ -1045,7 +1081,7 @@ void setup() {
   usbMIDI.setHandleNoteOn(OnNoteOn);
   usbMIDI.setHandleVelocityChange(OnAfterTouchPoly);
   usbMIDI.setHandleControlChange(OnControlChange);
-  usbMIDI.setHandlePitchChange(OnPitchChangeUSB);
+  usbMIDI.setHandlePitchChange(OnPitchChange);
   usbMIDI.setHandleProgramChange(OnProgramChange);
   usbMIDI.setHandleAfterTouch(OnAfterTouch);
   usbMIDI.setHandleSysEx(OnSysEx);
