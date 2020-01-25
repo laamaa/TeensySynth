@@ -1,7 +1,7 @@
 #include <Audio.h>
 
 // set SYNTH_DEBUG to enable debug logging (1=most,2=all messages)
-#define SYNTH_DEBUG 0
+#define SYNTH_DEBUG 2
 
 // define MIDI channel
 #define SYNTH_MIDICHANNEL 1
@@ -20,6 +20,10 @@
 // (0.25 is the safe value but larger sounds better :) )
 //#define GAIN_POLY 1.
 #define GAIN_POLY 0.5
+
+// smoothing factor for cutoff/resonance curves
+// 0.09 should give nice precision for lower freqs
+#define S_CURVE 0.09
 
 // gain in final mixer stage for monophonic modes
 //#define GAIN_MONO 1.
@@ -125,6 +129,8 @@ enum FilterMode_t {
 //////////////////////////////////////////////////////////////////////
 // Global variables
 //////////////////////////////////////////////////////////////////////
+const float DIV127 = (1.0 / 127.0);
+
 float   masterVolume   = 0.8;
 uint8_t currentProgram = WAVEFORM_SAWTOOTH;
 
@@ -154,6 +160,16 @@ float envHold;    // 0-200
 float envDecay;   // 0-200
 float envSustain; // 0-1
 float envRelease; // 0-200
+
+// filter envelope
+bool  fltEnvOn;
+bool  fltEnvInvert;
+float fltEnvDelay;   // 0-200
+float fltEnvAttack;  // 0-200
+float fltEnvHold;    // 0-200
+float fltEnvDecay;   // 0-200
+float fltEnvSustain; // 0-1
+float fltEnvRelease; // 0-200
 
 // FX
 bool  flangerOn;
@@ -309,6 +325,16 @@ void resetAll() {
   envSustain = 1;
   envRelease = 20;
 
+  // filter envelope
+  fltEnvOn      = false;
+  fltEnvInvert  = false;
+  fltEnvDelay   = 0;
+  fltEnvAttack  = 20;
+  fltEnvHold    = 0;
+  fltEnvDecay   = 0;
+  fltEnvSustain = 1;
+  fltEnvRelease = 20;
+
   // FX
   flangerOn         = false;
   flangerOffset     = DELAY_LENGTH/4;
@@ -318,7 +344,7 @@ void resetAll() {
 
   // portamento
   portamentoOn   = false;
-  portamentoTime = 1000;
+  portamentoTime = 500;
   portamentoDir  = 0;
   portamentoStep = 0;
   portamentoPos  = -1;
@@ -643,7 +669,8 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     updateEnvelope();
     break;
   case CC_FLT_FREQ: // filter frequency
-    filtFreq = value/2.5*AUDIO_SAMPLE_RATE_EXACT/127.;
+    filtFreq = 30+(11970/(1+exp(-S_CURVE*(value-64)))); // 
+    //filtFreq = value/2.5*AUDIO_SAMPLE_RATE_EXACT/127.;
     updateFilter();
     break;
   case CC_FLT_RES: // filter resonance
@@ -814,10 +841,12 @@ void OnPitchChange(uint8_t channel, int pitch) {
 #endif
 
 #ifdef USB_MIDI
+
   if (pitch == 8192)
-    pitchBend = 0;
+    pitchBend = 1;
   else
-    pitchBend = (pitch-8192)/8192.;
+    pitchBend = 1+(pitch-8192)/8192.;
+
 #else  
   pitchBend = pitch/8192.;
 #endif

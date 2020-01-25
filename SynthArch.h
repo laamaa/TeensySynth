@@ -6,12 +6,6 @@
 // Audio architecture generated with
 // http://www.pjrc.com/teensy/gui/
 
-#include <Audio.h>
-#include <Wire.h>
-#include <SPI.h>
-#include <SD.h>
-#include <SerialFlash.h>
-
 // GUItool: begin automatically generated code
 AudioSynthWaveformDc     dc1;            //xy=155,364
 AudioEffectEnvelope      flt_envelope;   //xy=313,364
