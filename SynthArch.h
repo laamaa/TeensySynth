@@ -22,14 +22,14 @@ AudioEffectEnvelope      flt_env_5;      //xy=518,579
 AudioEffectEnvelope      flt_env_6;      //xy=514,660
 AudioEffectEnvelope      flt_env_7;      //xy=517,754
 AudioEffectEnvelope      flt_env_8;      //xy=512,851
-AudioEffectMultiply      flt_sum_1;      //xy=674,167
-AudioEffectMultiply      flt_sum_2;      //xy=674,285
-AudioEffectMultiply      flt_sum_3;      //xy=672,835
-AudioEffectMultiply      flt_sum_4;      //xy=674,480
-AudioEffectMultiply      flt_sum_5;      //xy=674,644
-AudioEffectMultiply      flt_sum_6;      //xy=678,385
-AudioEffectMultiply      flt_sum_7;      //xy=677,738
-AudioEffectMultiply      flt_sum_8;      //xy=678,563
+AudioMixer4      flt_sum_1;      //xy=674,167
+AudioMixer4      flt_sum_2;      //xy=674,285
+AudioMixer4      flt_sum_3;      //xy=672,835
+AudioMixer4      flt_sum_4;      //xy=674,480
+AudioMixer4      flt_sum_5;      //xy=674,644
+AudioMixer4      flt_sum_6;      //xy=678,385
+AudioMixer4      flt_sum_7;      //xy=677,738
+AudioMixer4      flt_sum_8;      //xy=678,563
 AudioFilterStateVariable filter7;        //xy=814,737
 AudioFilterStateVariable filter8;        //xy=814,807
 AudioFilterStateVariable filter6;        //xy=815,641
@@ -71,6 +71,14 @@ AudioConnection          patchCord5(flt_lfo, 0, flt_sum_5, 1);
 AudioConnection          patchCord6(flt_lfo, 0, flt_sum_6, 1);
 AudioConnection          patchCord7(flt_lfo, 0, flt_sum_7, 1);
 AudioConnection          patchCord8(flt_lfo, 0, flt_sum_8, 1);
+/* AudioConnection          patchCord1(flt_lfo, 0, filter1, 1);
+AudioConnection          patchCord2(flt_lfo, 0, filter2, 1);
+AudioConnection          patchCord3(flt_lfo, 0, filter3, 1);
+AudioConnection          patchCord4(flt_lfo, 0, filter4, 1);
+AudioConnection          patchCord5(flt_lfo, 0, filter5, 1);
+AudioConnection          patchCord6(flt_lfo, 0, filter6, 1);
+AudioConnection          patchCord7(flt_lfo, 0, filter7, 1);
+AudioConnection          patchCord8(flt_lfo, 0, filter8, 1); */
 AudioConnection          patchCord9(flt_env_carrier, flt_env_1);
 AudioConnection          patchCord10(flt_env_carrier, flt_env_2);
 AudioConnection          patchCord11(flt_env_carrier, flt_env_3);

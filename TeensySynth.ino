@@ -69,6 +69,14 @@ short delaylineR[DELAY_LENGTH];
 #define CC_FLANGER_FREQ_COARSE 28
 #define CC_FLANGER_FREQ_FINE 29
 #define CC_PB_RANGE 30
+#define CC_FLT_LFO_RATE 31
+#define CC_FLT_LFO_DEPTH 32
+#define CC_FLT_ENV_ATK 33
+#define CC_FLT_ENV_DECAY 34
+#define CC_FLT_ENV_SUSTAIN 35
+#define CC_FLT_ENV_REL 36
+#define CC_FLT_ENV_INVERT 37
+#define CC_FLT_ENV_ON 38
 #define CC_SUSTAIN 64
 #define CC_PORTAMENTO 65
 #define CC_PORTAMENTO_CONTROL 84
@@ -86,7 +94,9 @@ struct Oscillator {
   AudioSynthWaveform*       wf;
   AudioFilterStateVariable* filt;
   AudioMixer4*              mix;
+  AudioMixer4*              flt_sum;
   AudioEffectEnvelope*      env;
+  AudioEffectEnvelope*      flt_env;
   int8_t  note;
   uint8_t velocity;
 };
@@ -96,23 +106,22 @@ struct Oscillator {
 
 #define NVOICES 8
 Oscillator oscs[NVOICES] = {
-  { &waveform1, &filter1, &mixer1, &envelope1, -1, 0 },
-  { &waveform2, &filter2, &mixer2, &envelope2, -1, 0 },
-  { &waveform3, &filter3, &mixer3, &envelope3, -1, 0 },
-  { &waveform4, &filter4, &mixer4, &envelope4, -1, 0 },
-  { &waveform5, &filter5, &mixer5, &envelope5, -1, 0 },
-  { &waveform6, &filter6, &mixer6, &envelope6, -1, 0 },
-  { &waveform7, &filter7, &mixer7, &envelope7, -1, 0 },
-  { &waveform8, &filter8, &mixer8, &envelope8, -1, 0 },
+  { &waveform1, &filter1, &mixer1, &flt_sum_1, &envelope1, &flt_env_1, -1, 0 },
+  { &waveform2, &filter2, &mixer2, &flt_sum_2, &envelope2, &flt_env_2, -1, 0 },
+  { &waveform3, &filter3, &mixer3, &flt_sum_3, &envelope3, &flt_env_3, -1, 0 },
+  { &waveform4, &filter4, &mixer4, &flt_sum_4, &envelope4, &flt_env_4, -1, 0 },
+  { &waveform5, &filter5, &mixer5, &flt_sum_5, &envelope5, &flt_env_5, -1, 0 },
+  { &waveform6, &filter6, &mixer6, &flt_sum_6, &envelope6, &flt_env_6, -1, 0 },
+  { &waveform7, &filter7, &mixer7, &flt_sum_7, &envelope7, &flt_env_7, -1, 0 },
+  { &waveform8, &filter8, &mixer8, &flt_sum_8, &envelope8, &flt_env_8, -1, 0 },
 };
 
-#define NPROGS 8
+#define NPROGS 7
 uint8_t progs[NPROGS] = {
   WAVEFORM_SINE,
   WAVEFORM_SQUARE,
   WAVEFORM_TRIANGLE,
   WAVEFORM_SAWTOOTH,
-  WAVEFORM_SAWTOOTH_REVERSE,
   WAVEFORM_PULSE,
   WAVEFORM_SAMPLE_HOLD,
   WAVEFORM_ARBITRARY,
@@ -151,6 +160,10 @@ FilterMode_t filterMode;
 float filtFreq; // 20-AUDIO_SAMPLE_RATE_EXACT/2.5
 float filtReso; // 0.9-5.0
 float filtAtt;  // 0-1
+
+// filter lfo
+float  fltLfoDepth;
+float  fltLfoRate;
 
 // envelope
 bool  envOn;
@@ -248,6 +261,23 @@ inline void updateFilter() {
   } while (++o < end);
 }
 
+inline void updateFilterEnvelope() {
+  Oscillator *o=oscs,*end=oscs+NVOICES;
+  do {
+    o->flt_env->delay(fltEnvDelay);
+    o->flt_env->attack(fltEnvAttack);
+    o->flt_env->hold(fltEnvHold);
+    o->flt_env->decay(fltEnvDecay);
+    o->flt_env->sustain(fltEnvSustain);
+    o->flt_env->release(fltEnvRelease);
+  } while (++o < end);
+}
+
+inline void updateFilterLFO() {
+  flt_lfo.amplitude(fltLfoDepth);
+  flt_lfo.frequency(fltLfoRate);
+}
+
 inline void updateEnvelope() {
   Oscillator *o=oscs,*end=oscs+NVOICES;
   do {
@@ -277,6 +307,18 @@ inline void updateEnvelopeMode() {
   }
 }
 
+inline void updateFltEnvelopeMode() {
+  if (!fltEnvOn) {
+    flt_env_carrier.amplitude(0);
+  } else {
+    if (fltEnvInvert) {
+      flt_env_carrier.amplitude(-1);
+    } else {
+      flt_env_carrier.amplitude(1);
+    }
+  }
+}
+
 void updateFlanger() {
   if (flangerOn) {
     AudioNoInterrupts();
@@ -302,7 +344,7 @@ void resetAll() {
   omniOn     = false;
   velocityOn = true;
   
-  filterMode     = FILTEROFF;
+  filterMode     = LOWPASS;
   sustainPressed = false;
   channelVolume  = 1.0;
   panorama       = 0.5;
@@ -312,14 +354,18 @@ void resetAll() {
   octCorr        = currentProgram == WAVEFORM_PULSE ? 1 : 0;
   
   // filter
-  filtFreq = 15000.;
-  filtReso = 0.9;
+  filtFreq = 12000.;
+  filtReso = 0.7;
   filtAtt  = 1.;
 
+  // filter lfo
+  fltLfoDepth = 0;
+  fltLfoRate = 0;
+
   // envelope
-  envOn      = false;
+  envOn      = true;
   envDelay   = 0;
-  envAttack  = 20;
+  envAttack  = 5;
   envHold    = 0;
   envDecay   = 0;
   envSustain = 1;
@@ -327,12 +373,12 @@ void resetAll() {
 
   // filter envelope
   fltEnvOn      = false;
-  fltEnvInvert  = false;
+  fltEnvInvert  = true;
   fltEnvDelay   = 0;
-  fltEnvAttack  = 20;
+  fltEnvAttack  = 100;
   fltEnvHold    = 0;
   fltEnvDecay   = 0;
-  fltEnvSustain = 1;
+  fltEnvSustain = 0;
   fltEnvRelease = 20;
 
   // FX
@@ -351,6 +397,7 @@ void resetAll() {
 
   updatePolyMode();
   updateFilterMode();
+  updateFilterLFO();
   updateEnvelope();
   updatePan();
 }
@@ -465,6 +512,7 @@ inline void oscOn(Oscillator& osc, int8_t note, uint8_t velocity) {
     osc.wf->frequency(noteToFreq(note));
     notesAdd(notesOn,note);
     if (envOn && !osc.velocity) osc.env->noteOn();
+    if (fltEnvOn) osc.flt_env->noteOn();
     osc.wf->amplitude(v*channelVolume*GAIN_OSC);
     osc.velocity = velocity;
     osc.note = note;
@@ -774,6 +822,40 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
       } while (++o < end);
     }
     break;
+  case CC_FLT_LFO_RATE:
+    //fltLfoRate = value * DIV127 * 30;
+    fltLfoRate = (30/(1+exp(-S_CURVE*(value-64))));
+    updateFilterLFO();
+    break;
+  case CC_FLT_LFO_DEPTH:
+    fltLfoDepth = value * DIV127;
+    updateFilterLFO();
+    break;
+  case CC_FLT_ENV_ATK:
+    fltEnvAttack = value * DIV127 * 1000; //0-1000ms
+    updateFilterEnvelope();
+    break;
+  case CC_FLT_ENV_DECAY:
+    fltEnvDecay = value * DIV127 * 1000; //0-1000ms
+    updateFilterEnvelope();
+    break;
+  case CC_FLT_ENV_SUSTAIN:
+    fltEnvSustain = value * DIV127 * 1000; //0-1000ms
+    updateFilterEnvelope();
+    break;
+  case CC_FLT_ENV_REL:
+    fltEnvRelease = value * DIV127 * 1000; //0-1000ms
+    updateFilterEnvelope();
+    break;
+  case CC_FLT_ENV_INVERT:
+    fltEnvInvert = !fltEnvInvert;
+    updateFltEnvelopeMode();
+    break;
+  case CC_FLT_ENV_ON:
+    allOff();
+    fltEnvOn = !fltEnvOn;
+    updateFltEnvelopeMode();
+    break;
   case CC_PORTAMENTO: // portamento on/off
     if (polyOn) break;
     if (value > 63) {
@@ -809,6 +891,7 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     portamentoOn = false;
     updatePolyMode();
     break;
+   
   default:
 #if SYNTH_DEBUG > 0
     SYNTH_SERIAL.print("Unhandled Control Change: channel ");
@@ -1095,6 +1178,8 @@ void setup() {
     Oscillator *o=oscs,*end=oscs+NVOICES;
     do {
       o->wf->arbitraryWaveform(reinterpret_cast<const int16_t*>(saw),0);
+      o->flt_sum->gain(0,1);
+      o->flt_sum->gain(1,1);
     } while(++o < end);
   }
   
@@ -1104,6 +1189,8 @@ void setup() {
   flangerL.begin(delaylineL,DELAY_LENGTH,FLANGE_DELAY_PASSTHRU,0,0);
   flangerR.begin(delaylineR,DELAY_LENGTH,FLANGE_DELAY_PASSTHRU,0,0);
   updateFlanger();
+
+  flt_env_carrier.amplitude(1.0);
 
 #ifdef USB_MIDI
   usbMIDI.setHandleNoteOff(OnNoteOff);
