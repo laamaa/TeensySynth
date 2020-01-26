@@ -147,10 +147,13 @@ bool  polyOn;
 bool  omniOn;
 bool  velocityOn;
 
+bool  pwmDirection;
+
 bool  sustainPressed;
 float channelVolume;
 float panorama;
 float pulseWidth; // 0.05-0.95
+float pwmSpeed;
 float pitchBend;  // -1/+1 oct
 float pitchScale;
 int   octCorr;
@@ -349,9 +352,11 @@ void resetAll() {
   channelVolume  = 1.0;
   panorama       = 0.5;
   pulseWidth     = 0.5;
+  pwmSpeed       = 0.0001;
   pitchBend      = 0;
   pitchScale     = 12./2;
   octCorr        = currentProgram == WAVEFORM_PULSE ? 1 : 0;
+  pwmDirection   = true;
   
   // filter
   filtFreq = 12000.;
@@ -497,6 +502,32 @@ inline void updatePortamento()
   oscs->wf->frequency(noteToFreq(portamentoPos));
 }
 
+inline void updatePWM()
+{
+  //if (currentProgram!=WAVEFORM_PULSE) return;
+  if (pwmDirection)
+  {
+    pulseWidth = pulseWidth + pwmSpeed;
+    if (pulseWidth >= 0.95) {
+      pwmDirection = false;
+    }
+    Oscillator *o=oscs,*end=oscs+NVOICES;
+    do {
+      o->wf->pulseWidth(pulseWidth);
+    } while(++o < end);
+  } else
+  {
+    pulseWidth = pulseWidth - pwmSpeed;
+    if (pulseWidth <= 0.05) {
+      pwmDirection = true; 
+    }
+    Oscillator *o=oscs,*end=oscs+NVOICES;
+    do {
+      o->wf->pulseWidth(pulseWidth);
+    } while(++o < end);
+  }
+}
+
 //////////////////////////////////////////////////////////////////////
 // Oscillator control functions
 //////////////////////////////////////////////////////////////////////
@@ -524,6 +555,7 @@ inline void oscOn(Oscillator& osc, int8_t note, uint8_t velocity) {
 
 inline void oscOff(Oscillator& osc) {
   if (envOn) osc.env->noteOff();
+  if (fltEnvOn) osc.flt_env->noteOff();
   else       osc.wf->amplitude(0);
   notesDel(notesOn,osc.note);
   osc.note = -1;
@@ -722,7 +754,7 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     updateFilter();
     break;
   case CC_FLT_RES: // filter resonance
-    filtReso = value*4.1/127.+0.9;
+    filtReso = value*4.1/127.+1;
     updateFilter();
     break;
   case CC_FLT_ATT: // filter attenuation
@@ -763,7 +795,17 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     break;
   case CC_ENV_MODE: // envelope mode
     allOff();
-    envOn = !envOn;
+    switch (value) {
+    case 0:
+      envOn = false;
+      break;
+    case 1:
+      envOn = true;
+      break;
+    default:
+      envOn = !envOn;
+      break;
+    }
     updateEnvelopeMode();
     break;
   case CC_ENV_DELAY: // delay
@@ -783,8 +825,7 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     updateEnvelope();
     break;
   case CC_PULSE_WIDTH: // pulse width
-    pulseWidth = (value/127.)*0.9+0.05;
-    updatePulseWidth();
+    pwmSpeed = value * DIV127 * 0.0004;
     break;
   case CC_FLANGER_MODE: // flanger toggle
     if (value < 2)
@@ -823,8 +864,7 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     }
     break;
   case CC_FLT_LFO_RATE:
-    //fltLfoRate = value * DIV127 * 30;
-    fltLfoRate = (30/(1+exp(-S_CURVE*(value-64))));
+    fltLfoRate = (25/(1+exp(-S_CURVE*(value-64))));
     updateFilterLFO();
     break;
   case CC_FLT_LFO_DEPTH:
@@ -832,19 +872,19 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     updateFilterLFO();
     break;
   case CC_FLT_ENV_ATK:
-    fltEnvAttack = value * DIV127 * 1000; //0-1000ms
+    fltEnvAttack = value * DIV127 * 1000 + 5; //5-1005ms
     updateFilterEnvelope();
     break;
   case CC_FLT_ENV_DECAY:
-    fltEnvDecay = value * DIV127 * 1000; //0-1000ms
+    fltEnvDecay = value * DIV127 * 1000 + 5; //5-1005ms
     updateFilterEnvelope();
     break;
   case CC_FLT_ENV_SUSTAIN:
-    fltEnvSustain = value * DIV127 * 1000; //0-1000ms
+    fltEnvSustain = value * DIV127; //0-1
     updateFilterEnvelope();
     break;
   case CC_FLT_ENV_REL:
-    fltEnvRelease = value * DIV127 * 1000; //0-1000ms
+    fltEnvRelease = value * DIV127 * 1000 +5; //5-1000ms
     updateFilterEnvelope();
     break;
   case CC_FLT_ENV_INVERT:
@@ -853,7 +893,17 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     break;
   case CC_FLT_ENV_ON:
     allOff();
-    fltEnvOn = !fltEnvOn;
+    switch (value) {
+    case 0:
+      fltEnvOn = false;
+      break;
+    case 1:
+      fltEnvOn = true;
+      break;
+    default:
+      fltEnvOn = !fltEnvOn;
+      break;
+    }
     updateFltEnvelopeMode();
     break;
   case CC_PORTAMENTO: // portamento on/off
@@ -1178,8 +1228,9 @@ void setup() {
     Oscillator *o=oscs,*end=oscs+NVOICES;
     do {
       o->wf->arbitraryWaveform(reinterpret_cast<const int16_t*>(saw),0);
-      o->flt_sum->gain(0,1);
-      o->flt_sum->gain(1,1);
+      o->flt_sum->gain(0,0.5);
+      o->flt_sum->gain(1,0.5);
+      o->filt->octaveControl(6);
     } while(++o < end);
   }
   
@@ -1239,6 +1290,8 @@ void loop() {
 #endif
   updateMasterVolume();
   updatePortamento();
+  updatePWM();
+  
 
 #if SYNTH_DEBUG > 0
   performanceCheck();

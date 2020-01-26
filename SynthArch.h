@@ -71,14 +71,6 @@ AudioConnection          patchCord5(flt_lfo, 0, flt_sum_5, 1);
 AudioConnection          patchCord6(flt_lfo, 0, flt_sum_6, 1);
 AudioConnection          patchCord7(flt_lfo, 0, flt_sum_7, 1);
 AudioConnection          patchCord8(flt_lfo, 0, flt_sum_8, 1);
-/* AudioConnection          patchCord1(flt_lfo, 0, filter1, 1);
-AudioConnection          patchCord2(flt_lfo, 0, filter2, 1);
-AudioConnection          patchCord3(flt_lfo, 0, filter3, 1);
-AudioConnection          patchCord4(flt_lfo, 0, filter4, 1);
-AudioConnection          patchCord5(flt_lfo, 0, filter5, 1);
-AudioConnection          patchCord6(flt_lfo, 0, filter6, 1);
-AudioConnection          patchCord7(flt_lfo, 0, filter7, 1);
-AudioConnection          patchCord8(flt_lfo, 0, filter8, 1); */
 AudioConnection          patchCord9(flt_env_carrier, flt_env_1);
 AudioConnection          patchCord10(flt_env_carrier, flt_env_2);
 AudioConnection          patchCord11(flt_env_carrier, flt_env_3);

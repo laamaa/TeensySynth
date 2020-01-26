@@ -40,7 +40,7 @@ CC# | Name                   | Function
  22 | Envelope decay         | changes envelope decay time    (range: 0-200 ms)
  23 | Envelope sustain       | changes envelope sustain level (range: 0.0-1.0)
 --------------------------------------------------------------------------------
- 24 | Pulse width            | changes pulse width of osc.    (range: 0.0-1.0)
+ 24 | PWM speed              | changes speed of PWM           (range: ?)
 --------------------------------------------------------------------------------
  25 | Flanger mode           | MIDI value
     |                        |   0     flanger off
