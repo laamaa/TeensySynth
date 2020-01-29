@@ -1,7 +1,7 @@
 #include <Audio.h>
 
 // set SYNTH_DEBUG to enable debug logging (1=most,2=all messages)
-#define SYNTH_DEBUG 2
+#define SYNTH_DEBUG 1
 
 // define MIDI channel
 #define SYNTH_MIDICHANNEL 1
@@ -39,13 +39,11 @@ short delaylineR[DELAY_LENGTH];
 
 // switch between USB and UART MIDI
 #ifdef USB_MIDI
-#define SYNTH_SERIAL Serial1
-#else // 'real' MIDI via UART
 #define SYNTH_SERIAL Serial
-#include <MIDI.h>
 #endif
 
 // MIDI CC numbers
+#define CC_MODULATION 1
 #define CC_PORTAMENTO_TIME 5
 #define CC_VOLUME 7
 #define CC_FIX_VOLUME 9
@@ -76,7 +74,9 @@ short delaylineR[DELAY_LENGTH];
 #define CC_FLT_ENV_SUSTAIN 35
 #define CC_FLT_ENV_REL 36
 #define CC_FLT_ENV_INVERT 37
-#define CC_FLT_ENV_ON 38
+#define CC_FLT_ENV_DEPTH 38
+#define CC_PITCH_LFO_RATE 39
+#define CC_PITCH_LFO_DEPTH 40
 #define CC_SUSTAIN 64
 #define CC_PORTAMENTO 65
 #define CC_PORTAMENTO_CONTROL 84
@@ -91,12 +91,12 @@ short delaylineR[DELAY_LENGTH];
 // Data types and lookup tables
 //////////////////////////////////////////////////////////////////////
 struct Oscillator {
-  AudioSynthWaveform*       wf;
-  AudioFilterStateVariable* filt;
-  AudioMixer4*              mix;
-  AudioMixer4*              flt_sum;
-  AudioEffectEnvelope*      env;
-  AudioEffectEnvelope*      flt_env;
+  AudioSynthWaveformModulated* wf;
+  AudioFilterStateVariable*    filt;
+  AudioMixer4*                 mix;
+  AudioMixer4*                 flt_sum;
+  AudioEffectEnvelope*         env;
+  AudioEffectEnvelope*         flt_env;
   int8_t  note;
   uint8_t velocity;
 };
@@ -116,11 +116,12 @@ Oscillator oscs[NVOICES] = {
   { &waveform8, &filter8, &mixer8, &flt_sum_8, &envelope8, &flt_env_8, -1, 0 },
 };
 
-#define NPROGS 7
+#define NPROGS 8
 uint8_t progs[NPROGS] = {
   WAVEFORM_SINE,
   WAVEFORM_SQUARE,
   WAVEFORM_TRIANGLE,
+  WAVEFORM_TRIANGLE_VARIABLE,
   WAVEFORM_SAWTOOTH,
   WAVEFORM_PULSE,
   WAVEFORM_SAMPLE_HOLD,
@@ -152,11 +153,10 @@ bool  pwmDirection;
 bool  sustainPressed;
 float channelVolume;
 float panorama;
-float pulseWidth; // 0.05-0.95
-float pwmSpeed;
 float pitchBend;  // -1/+1 oct
 float pitchScale;
 int   octCorr;
+float   oldPitchLfoDepth;
 
 // filter
 FilterMode_t filterMode;
@@ -167,6 +167,13 @@ float filtAtt;  // 0-1
 // filter lfo
 float  fltLfoDepth;
 float  fltLfoRate;
+
+// pitch lfo
+float pitchLfoRate;
+float pitchLfoDepth;
+
+// pwm lfo
+float pwmLfoRate;
 
 // envelope
 bool  envOn;
@@ -186,6 +193,7 @@ float fltEnvHold;    // 0-200
 float fltEnvDecay;   // 0-200
 float fltEnvSustain; // 0-1
 float fltEnvRelease; // 0-200
+float fltEnvDepth;   // 0-1
 
 // FX
 bool  flangerOn;
@@ -281,6 +289,15 @@ inline void updateFilterLFO() {
   flt_lfo.frequency(fltLfoRate);
 }
 
+inline void updatePwmLFO() {
+  pwm_lfo.frequency(pwmLfoRate);
+}
+
+inline void updatePitchLFO() {
+  pitch_lfo.amplitude(pitchLfoDepth);
+  pitch_lfo.frequency(pitchLfoRate);
+}
+
 inline void updateEnvelope() {
   Oscillator *o=oscs,*end=oscs+NVOICES;
   do {
@@ -310,14 +327,14 @@ inline void updateEnvelopeMode() {
   }
 }
 
-inline void updateFltEnvelopeMode() {
+inline void updateFilterEnvelopeMode() {
   if (!fltEnvOn) {
     flt_env_carrier.amplitude(0);
   } else {
     if (fltEnvInvert) {
-      flt_env_carrier.amplitude(-1);
+      flt_env_carrier.amplitude(-fltEnvDepth);
     } else {
-      flt_env_carrier.amplitude(1);
+      flt_env_carrier.amplitude(fltEnvDepth);
     }
   }
 }
@@ -351,21 +368,25 @@ void resetAll() {
   sustainPressed = false;
   channelVolume  = 1.0;
   panorama       = 0.5;
-  pulseWidth     = 0.5;
-  pwmSpeed       = 0.0001;
   pitchBend      = 0;
   pitchScale     = 12./2;
-  octCorr        = currentProgram == WAVEFORM_PULSE ? 1 : 0;
-  pwmDirection   = true;
+  oldPitchLfoDepth = 999; //hacky way to use modwheel - set original lfo value as impossible value 999 to know we're not using the modwheel atm
   
   // filter
-  filtFreq = 12000.;
-  filtReso = 0.7;
+  filtFreq = 20000.;
+  filtReso = 0.9;
   filtAtt  = 1.;
 
   // filter lfo
   fltLfoDepth = 0;
   fltLfoRate = 0;
+
+  // pitch lfo
+  pitchLfoDepth = 0;
+  pitchLfoRate = 6;
+
+  // pwm lfo
+  pwmLfoRate = 0.5;
 
   // envelope
   envOn      = true;
@@ -377,14 +398,14 @@ void resetAll() {
   envRelease = 20;
 
   // filter envelope
-  fltEnvOn      = false;
-  fltEnvInvert  = true;
+  fltEnvOn      = true;
+  fltEnvInvert  = false;
   fltEnvDelay   = 0;
-  fltEnvAttack  = 100;
+  fltEnvAttack  = 5;
   fltEnvHold    = 0;
   fltEnvDecay   = 0;
-  fltEnvSustain = 0;
-  fltEnvRelease = 20;
+  fltEnvSustain = 1;
+  fltEnvRelease = envRelease;
 
   // FX
   flangerOn         = false;
@@ -403,6 +424,8 @@ void resetAll() {
   updatePolyMode();
   updateFilterMode();
   updateFilterLFO();
+  updatePitchLFO();
+  updatePwmLFO();
   updateEnvelope();
   updatePan();
 }
@@ -413,17 +436,7 @@ inline void updateProgram() {
     
   Oscillator *o=oscs,*end=oscs+NVOICES;
   do {
-    if (currentProgram==WAVEFORM_PULSE) o->wf->pulseWidth(pulseWidth);
     o->wf->begin(progs[currentProgram]);
-  } while(++o < end);
-}
-
-inline void updatePulseWidth() {
-  if (currentProgram!=WAVEFORM_PULSE) return;
-  Oscillator *o=oscs,*end=oscs+NVOICES;
-  do {
-    if (o->note < 0) continue;
-    o->wf->pulseWidth(pulseWidth);
   } while(++o < end);
 }
 
@@ -500,32 +513,6 @@ inline void updatePortamento()
     }
   }
   oscs->wf->frequency(noteToFreq(portamentoPos));
-}
-
-inline void updatePWM()
-{
-  //if (currentProgram!=WAVEFORM_PULSE) return;
-  if (pwmDirection)
-  {
-    pulseWidth = pulseWidth + pwmSpeed;
-    if (pulseWidth >= 0.95) {
-      pwmDirection = false;
-    }
-    Oscillator *o=oscs,*end=oscs+NVOICES;
-    do {
-      o->wf->pulseWidth(pulseWidth);
-    } while(++o < end);
-  } else
-  {
-    pulseWidth = pulseWidth - pwmSpeed;
-    if (pulseWidth <= 0.05) {
-      pwmDirection = true; 
-    }
-    Oscillator *o=oscs,*end=oscs+NVOICES;
-    do {
-      o->wf->pulseWidth(pulseWidth);
-    } while(++o < end);
-  }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -712,6 +699,19 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
   switch (control) {
   case 0: // bank select, do nothing (switch sounds via program change only)
     break;
+
+  case CC_MODULATION:
+    if (value != 0 && oldPitchLfoDepth == 999) {
+      oldPitchLfoDepth = pitchLfoDepth;
+    }
+      pitchLfoDepth = (0.1/(1+exp(-S_CURVE*(value-64))));
+    if (value == 0 && oldPitchLfoDepth != 999) {
+      pitchLfoDepth = oldPitchLfoDepth;
+      oldPitchLfoDepth = 999; 
+    }
+    updatePitchLFO();
+    break;
+    
   case CC_PORTAMENTO_TIME: // portamento time
   {
     float portamentoRange = portamentoStep*portamentoTime;
@@ -825,7 +825,8 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     updateEnvelope();
     break;
   case CC_PULSE_WIDTH: // pulse width
-    pwmSpeed = value * DIV127 * 0.0004;
+    pwmLfoRate = (10/(1+exp(-S_CURVE*(value-64))));
+    updatePwmLFO();
     break;
   case CC_FLANGER_MODE: // flanger toggle
     if (value < 2)
@@ -871,8 +872,16 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     fltLfoDepth = value * DIV127;
     updateFilterLFO();
     break;
+  case CC_PITCH_LFO_RATE:
+    pitchLfoRate = (20/(1+exp(-S_CURVE*(value-64))));
+    updatePitchLFO();
+    break;
+  case CC_PITCH_LFO_DEPTH:
+    pitchLfoDepth = (0.3/(1+exp(-S_CURVE*(value-64))));
+    updatePitchLFO();
+    break;
   case CC_FLT_ENV_ATK:
-    fltEnvAttack = value * DIV127 * 1000 + 5; //5-1005ms
+    fltEnvAttack = value * DIV127 * 1000; //0-1000ms
     updateFilterEnvelope();
     break;
   case CC_FLT_ENV_DECAY:
@@ -889,22 +898,11 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     break;
   case CC_FLT_ENV_INVERT:
     fltEnvInvert = !fltEnvInvert;
-    updateFltEnvelopeMode();
+    updateFilterEnvelopeMode();
     break;
-  case CC_FLT_ENV_ON:
-    allOff();
-    switch (value) {
-    case 0:
-      fltEnvOn = false;
-      break;
-    case 1:
-      fltEnvOn = true;
-      break;
-    default:
-      fltEnvOn = !fltEnvOn;
-      break;
-    }
-    updateFltEnvelopeMode();
+  case CC_FLT_ENV_DEPTH:
+    fltEnvDepth = value * DIV127;
+    updateFilterEnvelopeMode();
     break;
   case CC_PORTAMENTO: // portamento on/off
     if (polyOn) break;
@@ -1112,8 +1110,8 @@ void printInfo() {
   SYNTH_SERIAL.println(channelVolume);
   SYNTH_SERIAL.print("Panorama:             ");
   SYNTH_SERIAL.println(panorama);
-  SYNTH_SERIAL.print("Pulse Width:          ");
-  SYNTH_SERIAL.println(pulseWidth);
+  SYNTH_SERIAL.print("PWM Rate:             ");
+  SYNTH_SERIAL.println(pwmLfoRate);
   SYNTH_SERIAL.print("Pitch Bend:           ");
   SYNTH_SERIAL.println(pitchBend);
   SYNTH_SERIAL.println();
@@ -1241,7 +1239,8 @@ void setup() {
   flangerR.begin(delaylineR,DELAY_LENGTH,FLANGE_DELAY_PASSTHRU,0,0);
   updateFlanger();
 
-  flt_env_carrier.amplitude(1.0);
+  flt_env_carrier.amplitude(0);
+  pwm_lfo.amplitude(0.9);
 
 #ifdef USB_MIDI
   usbMIDI.setHandleNoteOff(OnNoteOff);
@@ -1289,9 +1288,7 @@ void loop() {
   MIDI.read();
 #endif
   updateMasterVolume();
-  updatePortamento();
-  updatePWM();
-  
+  updatePortamento();  
 
 #if SYNTH_DEBUG > 0
   performanceCheck();

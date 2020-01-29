@@ -1,5 +1,16 @@
 ## TeensySynth - a polyphonic MIDI synthesizer for Teensy 3.x
 
+This is laamaa's fork of [jmechnich's](https://github.com/jmechnich/TeensySynth/) TeensySynth polyphonic MIDI synthesizer.
+
+Added features:
+* Pitch LFO
+* Filter LFO
+* Filter Envelope
+* PWM
+* TouchOSC layout for MIDI control
+
+---
+
 ### Features
 * 8-voice polyphony
 * 7 waveforms: sine, square, triangle, sawtooth, reverse sawtooth, pulse, sample & hold
