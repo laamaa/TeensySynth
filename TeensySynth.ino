@@ -1,7 +1,7 @@
 #include <Audio.h>
 
 // set SYNTH_DEBUG to enable debug logging (1=most,2=all messages)
-#define SYNTH_DEBUG 1
+#define SYNTH_DEBUG 0
 
 // define MIDI channel
 #define SYNTH_MIDICHANNEL 1
@@ -14,7 +14,7 @@
 
 // gain at oscillator/filter input stage (1:1)
 // keep low so filter does not saturate with resonance
-#define GAIN_OSC 0.5
+#define GAIN_OSC 0.3
 
 // gain in final mixer stage for polyphonic mode (4:1)
 // (0.25 is the safe value but larger sounds better :) )
@@ -61,11 +61,6 @@ short delaylineR[DELAY_LENGTH];
 #define CC_ENV_DECAY 22
 #define CC_ENV_SUSTAIN 23
 #define CC_PULSE_WIDTH 24
-#define CC_FLANGER_MODE 25
-#define CC_FLANGER_OFFSET 26
-#define CC_FLANGER_DEPTH 27
-#define CC_FLANGER_FREQ_COARSE 28
-#define CC_FLANGER_FREQ_FINE 29
 #define CC_PB_RANGE 30
 #define CC_FLT_LFO_RATE 31
 #define CC_FLT_LFO_DEPTH 32
@@ -77,6 +72,11 @@ short delaylineR[DELAY_LENGTH];
 #define CC_FLT_ENV_DEPTH 38
 #define CC_PITCH_LFO_RATE 39
 #define CC_PITCH_LFO_DEPTH 40
+#define CC_OSC1_PROGRAM 41
+#define CC_OSC2_PROGRAM 42
+#define CC_OSC2_OCTAVE 43
+#define CC_OSC2_DETUNE 44
+#define CC_OSC_BALANCE 45
 #define CC_SUSTAIN 64
 #define CC_PORTAMENTO 65
 #define CC_PORTAMENTO_CONTROL 84
@@ -92,6 +92,8 @@ short delaylineR[DELAY_LENGTH];
 //////////////////////////////////////////////////////////////////////
 struct Oscillator {
   AudioSynthWaveformModulated* wf;
+  AudioSynthWaveformModulated* wf2;
+  AudioMixer4*                 wf_sum;
   AudioFilterStateVariable*    filt;
   AudioMixer4*                 mix;
   AudioMixer4*                 flt_sum;
@@ -106,14 +108,14 @@ struct Oscillator {
 
 #define NVOICES 8
 Oscillator oscs[NVOICES] = {
-  { &waveform1, &filter1, &mixer1, &flt_sum_1, &envelope1, &flt_env_1, -1, 0 },
-  { &waveform2, &filter2, &mixer2, &flt_sum_2, &envelope2, &flt_env_2, -1, 0 },
-  { &waveform3, &filter3, &mixer3, &flt_sum_3, &envelope3, &flt_env_3, -1, 0 },
-  { &waveform4, &filter4, &mixer4, &flt_sum_4, &envelope4, &flt_env_4, -1, 0 },
-  { &waveform5, &filter5, &mixer5, &flt_sum_5, &envelope5, &flt_env_5, -1, 0 },
-  { &waveform6, &filter6, &mixer6, &flt_sum_6, &envelope6, &flt_env_6, -1, 0 },
-  { &waveform7, &filter7, &mixer7, &flt_sum_7, &envelope7, &flt_env_7, -1, 0 },
-  { &waveform8, &filter8, &mixer8, &flt_sum_8, &envelope8, &flt_env_8, -1, 0 },
+  { &waveform1, &waveform1b, &waveform_sum_1, &filter1, &mixer1, &flt_sum_1, &envelope1, &flt_env_1, -1, 0 },
+  { &waveform2, &waveform2b, &waveform_sum_2, &filter2, &mixer2, &flt_sum_2, &envelope2, &flt_env_2, -1, 0 },
+  { &waveform3, &waveform3b, &waveform_sum_3, &filter3, &mixer3, &flt_sum_3, &envelope3, &flt_env_3, -1, 0 },
+  { &waveform4, &waveform4b, &waveform_sum_4, &filter4, &mixer4, &flt_sum_4, &envelope4, &flt_env_4, -1, 0 },
+  { &waveform5, &waveform5b, &waveform_sum_5, &filter5, &mixer5, &flt_sum_5, &envelope5, &flt_env_5, -1, 0 },
+  { &waveform6, &waveform6b, &waveform_sum_6, &filter6, &mixer6, &flt_sum_6, &envelope6, &flt_env_6, -1, 0 },
+  { &waveform7, &waveform7b, &waveform_sum_7, &filter7, &mixer7, &flt_sum_7, &envelope7, &flt_env_7, -1, 0 },
+  { &waveform8, &waveform8b, &waveform_sum_8, &filter8, &mixer8, &flt_sum_8, &envelope8, &flt_env_8, -1, 0 },
 };
 
 #define NPROGS 8
@@ -143,6 +145,7 @@ const float DIV127 = (1.0 / 127.0);
 
 float   masterVolume   = 0.8;
 uint8_t currentProgram = WAVEFORM_SAWTOOTH;
+uint8_t currentOsc2Program = WAVEFORM_PULSE;
 
 bool  polyOn;
 bool  omniOn;
@@ -152,10 +155,13 @@ bool  pwmDirection;
 
 bool  sustainPressed;
 float channelVolume;
+float oscBalance; // 0-1
 float panorama;
 float pitchBend;  // -1/+1 oct
 float pitchScale;
 int   octCorr;
+int   osc2Octave;
+int   osc2Detune;
 float   oldPitchLfoDepth;
 
 // filter
@@ -194,13 +200,6 @@ float fltEnvDecay;   // 0-200
 float fltEnvSustain; // 0-1
 float fltEnvRelease; // 0-200
 float fltEnvDepth;   // 0-1
-
-// FX
-bool  flangerOn;
-int   flangerOffset;
-int   flangerDepth;
-float flangerFreqCoarse;
-float flangerFreqFine;
 
 // portamento
 bool     portamentoOn;
@@ -339,25 +338,6 @@ inline void updateFilterEnvelopeMode() {
   }
 }
 
-void updateFlanger() {
-  if (flangerOn) {
-    AudioNoInterrupts();
-    flangerL.voices(flangerOffset,flangerDepth,flangerFreqCoarse+flangerFreqFine);
-    flangerR.voices(flangerOffset,flangerDepth,flangerFreqCoarse+flangerFreqFine);
-    AudioInterrupts();
-#if SYNTH_DEBUG > 0
-    SYNTH_SERIAL.print("Flanger: offset=");
-    SYNTH_SERIAL.print(flangerOffset);
-    SYNTH_SERIAL.print(", depth=");
-    SYNTH_SERIAL.print(flangerDepth);
-    SYNTH_SERIAL.print(", freq=");
-    SYNTH_SERIAL.println(flangerFreqCoarse+flangerFreqFine);    
-#endif
-  } else {
-    flangerL.voices(FLANGE_DELAY_PASSTHRU,0,0);
-    flangerR.voices(FLANGE_DELAY_PASSTHRU,0,0);        
-  }
-}
 
 void resetAll() {
   polyOn     = true;
@@ -407,13 +387,6 @@ void resetAll() {
   fltEnvSustain = 1;
   fltEnvRelease = envRelease;
 
-  // FX
-  flangerOn         = false;
-  flangerOffset     = DELAY_LENGTH/4;
-  flangerDepth      = DELAY_LENGTH/16;
-  flangerFreqCoarse = 0;
-  flangerFreqFine   = .5;
-
   // portamento
   portamentoOn   = false;
   portamentoTime = 500;
@@ -431,12 +404,19 @@ void resetAll() {
 }
 
 inline void updateProgram() {
-  if (currentProgram==WAVEFORM_PULSE) octCorr = 1;
-  else                   octCorr = 0;
+/*  if (currentProgram==WAVEFORM_PULSE) octCorr = 1;
+  else                   octCorr = 0; */
     
   Oscillator *o=oscs,*end=oscs+NVOICES;
   do {
     o->wf->begin(progs[currentProgram]);
+  } while(++o < end);
+}
+
+inline void updateOsc2Program() {
+  Oscillator *o=oscs,*end=oscs+NVOICES;
+  do {
+    o->wf2->begin(progs[currentOsc2Program]);
   } while(++o < end);
 }
 
@@ -445,6 +425,7 @@ inline void updatePitch() {
   do {
     if (o->note < 0) continue;
     o->wf->frequency(noteToFreq(o->note));
+    o->wf2->frequency(noteToFreq(o->note + osc2Octave) + osc2Detune);
   } while(++o < end);
 }
 
@@ -455,6 +436,7 @@ inline void updateVolume() {
     if (o->note < 0) continue;
     velocity = velocityOn ? o->velocity/127. : 1;
     o->wf->amplitude(velocity*channelVolume*GAIN_OSC);
+    o->wf2->amplitude(velocity*channelVolume*GAIN_OSC);    
   } while(++o < end);
 }
 
@@ -513,6 +495,16 @@ inline void updatePortamento()
     }
   }
   oscs->wf->frequency(noteToFreq(portamentoPos));
+  oscs->wf2->frequency(noteToFreq(portamentoPos + osc2Octave) + osc2Detune);
+}
+
+inline void updateOscBalance()
+{
+  Oscillator *o=oscs,*end=oscs+NVOICES;
+  do {
+    o->wf_sum->gain(0,1-oscBalance);
+    o->wf_sum->gain(1,oscBalance);
+  } while(++o < end); 
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -528,22 +520,25 @@ inline void oscOn(Oscillator& osc, int8_t note, uint8_t velocity) {
   float v = velocityOn ? velocity/127. : 1;
   if (osc.note!=note) {
     osc.wf->frequency(noteToFreq(note));
+    osc.wf2->frequency(noteToFreq(note + osc2Octave) + osc2Detune);
     notesAdd(notesOn,note);
     if (envOn && !osc.velocity) osc.env->noteOn();
     if (fltEnvOn) osc.flt_env->noteOn();
     osc.wf->amplitude(v*channelVolume*GAIN_OSC);
+    osc.wf2->amplitude(v*channelVolume*GAIN_OSC);    
     osc.velocity = velocity;
     osc.note = note;
   } else if (velocity > osc.velocity) {
     osc.wf->amplitude(v*channelVolume*GAIN_OSC);
+    osc.wf2->amplitude(v*channelVolume*GAIN_OSC);    
     osc.velocity = velocity;
   }
 }
 
 inline void oscOff(Oscillator& osc) {
-  if (envOn) osc.env->noteOff();
-  if (fltEnvOn) osc.flt_env->noteOff();
+  if (envOn) {osc.env->noteOff(); }
   else       osc.wf->amplitude(0);
+  if (fltEnvOn) osc.flt_env->noteOff();
   notesDel(notesOn,osc.note);
   osc.note = -1;
   osc.velocity = 0;
@@ -554,7 +549,9 @@ inline void allOff() {
   do {
     oscOff(*o);
     o->wf->amplitude(0);
+    o->wf2->amplitude(0);
     o->env->noteOff();
+    o->flt_env->noteOff();
   } while(++o < end);
   notesReset(notesOn);
 }
@@ -741,11 +738,11 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     updatePan();
     break;
   case CC_ENV_ATK: // attack
-    envAttack = value*200./127.;
+    envAttack = value*2000./127.;
     updateEnvelope();
     break;
   case CC_ENV_REL: // release
-    envRelease = value*200./127.;
+    envRelease = value*2000./127.;
     updateEnvelope();
     break;
   case CC_FLT_FREQ: // filter frequency
@@ -809,47 +806,24 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     updateEnvelopeMode();
     break;
   case CC_ENV_DELAY: // delay
-    envDelay = value*200./127.;
+    envDelay = value*2000./127.;
     updateEnvelope();
     break;
   case CC_ENV_HOLD: // hold
-    envHold = value*200./127.;
+    envHold = value*2000./127.;
     updateEnvelope();
     break;
   case CC_ENV_DECAY: // decay
-    envDecay = value*200./127.;
+    envDecay = value*2000./127.;
     updateEnvelope();
     break;
   case CC_ENV_SUSTAIN: // sustain
-    envSustain = value/127.;
+    envSustain = value*2000./127.;
     updateEnvelope();
     break;
   case CC_PULSE_WIDTH: // pulse width
     pwmLfoRate = (10/(1+exp(-S_CURVE*(value-64))));
     updatePwmLFO();
-    break;
-  case CC_FLANGER_MODE: // flanger toggle
-    if (value < 2)
-        flangerOn = bool(value);
-    else
-        flangerOn = !flangerOn;
-    updateFlanger();
-    break;
-  case CC_FLANGER_OFFSET: // flanger offset
-    flangerOffset = int(value/127.*8)*DELAY_LENGTH/8;
-    updateFlanger();
-    break;
-  case CC_FLANGER_DEPTH: // flanger depth
-    flangerDepth = int(value/127.*8)*DELAY_LENGTH/8;
-    updateFlanger();
-    break;
-  case CC_FLANGER_FREQ_COARSE: // flanger coarse frequency
-    flangerFreqCoarse = value/127.*10.;
-    updateFlanger();
-    break;
-  case CC_FLANGER_FREQ_FINE: // flanger fine frequency
-    flangerFreqFine = value/127.;
-    updateFlanger();
     break;
   case CC_PB_RANGE: // pitch range in semitones
     pitchScale = 12./value;
@@ -939,7 +913,50 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     portamentoOn = false;
     updatePolyMode();
     break;
-   
+  case CC_OSC1_PROGRAM:
+    if (value < NPROGS) {
+      if (value != currentProgram) {
+        currentProgram = value;
+        updateProgram();
+      }
+    }
+    break;
+  case CC_OSC2_PROGRAM:
+    if (value < NPROGS) {
+      if (value != currentProgram) {
+        currentOsc2Program = value;
+        updateOsc2Program();
+      }
+    }
+    break;
+  case CC_OSC2_OCTAVE:
+    switch (value) {
+      case 0:
+        osc2Octave = -24;
+        break;
+      case 1:
+        osc2Octave = -12;
+        break;
+      case 2:
+        osc2Octave = 0;
+        break;
+      case 3:
+        osc2Octave = +12;
+        break;
+      case 4:
+        osc2Octave = +24;
+        break;
+    }
+    updatePitch();
+    break;
+  case CC_OSC2_DETUNE:
+    osc2Detune = (-64 + value) / 4;
+    updatePitch();
+    break;
+  case CC_OSC_BALANCE:
+    oscBalance = value * DIV127;
+    updateOscBalance();
+    break;
   default:
 #if SYNTH_DEBUG > 0
     SYNTH_SERIAL.print("Unhandled Control Change: channel ");
@@ -986,21 +1003,6 @@ void OnPitchChange(uint8_t channel, int pitch) {
 }
 
 void OnProgramChange(uint8_t channel, uint8_t program) {
-  if (!omniOn && channel!=SYNTH_MIDICHANNEL) return;
-
-#if SYNTH_DEBUG > 1
-  SYNTH_SERIAL.print("ProgramChange: channel ");
-  SYNTH_SERIAL.print(channel);
-  SYNTH_SERIAL.print(", program ");
-  SYNTH_SERIAL.println(program);
-#endif
-
-  if (program <NPROGS) {
-    if( program!=currentProgram) {
-      currentProgram = program;
-      updateProgram();
-    }
-  }
 }
 
 void OnAfterTouch(uint8_t channel, uint8_t pressure) {
@@ -1139,16 +1141,6 @@ void printInfo() {
   SYNTH_SERIAL.print("Envelope Release:     ");
   SYNTH_SERIAL.println(envRelease);
   SYNTH_SERIAL.println();
-  SYNTH_SERIAL.print("Flanger On:           ");
-  SYNTH_SERIAL.println(flangerOn);
-  SYNTH_SERIAL.print("Flanger Offset:       ");
-  SYNTH_SERIAL.println(flangerOffset);
-  SYNTH_SERIAL.print("Flanger Depth:        ");
-  SYNTH_SERIAL.println(flangerDepth);
-  SYNTH_SERIAL.print("Flanger Freq. Coarse: ");
-  SYNTH_SERIAL.println(flangerFreqCoarse);
-  SYNTH_SERIAL.print("Flanger Freq. Fine:   ");
-  SYNTH_SERIAL.println(flangerFreqFine);
   SYNTH_SERIAL.print("Delay Line Length:    ");
   SYNTH_SERIAL.println(DELAY_LENGTH);
   SYNTH_SERIAL.println();
@@ -1226,21 +1218,38 @@ void setup() {
     Oscillator *o=oscs,*end=oscs+NVOICES;
     do {
       o->wf->arbitraryWaveform(reinterpret_cast<const int16_t*>(saw),0);
+      o->wf2->arbitraryWaveform(reinterpret_cast<const int16_t*>(saw),0);
       o->flt_sum->gain(0,0.5);
       o->flt_sum->gain(1,0.5);
       o->filt->octaveControl(6);
+      o->wf_sum->gain(0,0.5);
+      o->wf_sum->gain(1,0.5);
     } while(++o < end);
   }
   
   resetAll();
   updateProgram();
   
-  flangerL.begin(delaylineL,DELAY_LENGTH,FLANGE_DELAY_PASSTHRU,0,0);
-  flangerR.begin(delaylineR,DELAY_LENGTH,FLANGE_DELAY_PASSTHRU,0,0);
-  updateFlanger();
-
   flt_env_carrier.amplitude(0);
   pwm_lfo.amplitude(0.9);
+
+  int oscHighpass = 30;
+  biquad1.setHighpass(0,oscHighpass,0.7071);
+  biquad1b.setHighpass(0,oscHighpass,0.7071);
+  biquad2.setHighpass(0,oscHighpass,0.7071);
+  biquad2b.setHighpass(0,oscHighpass,0.7071);
+  biquad3.setHighpass(0,oscHighpass,0.7071);
+  biquad3b.setHighpass(0,oscHighpass,0.7071);
+  biquad4.setHighpass(0,oscHighpass,0.7071);
+  biquad4b.setHighpass(0,oscHighpass,0.7071);
+  biquad5.setHighpass(0,oscHighpass,0.7071);
+  biquad5b.setHighpass(0,oscHighpass,0.7071);
+  biquad6.setHighpass(0,oscHighpass,0.7071);
+  biquad6b.setHighpass(0,oscHighpass,0.7071);
+  biquad7.setHighpass(0,oscHighpass,0.7071);
+  biquad7b.setHighpass(0,oscHighpass,0.7071);
+  biquad8.setHighpass(0,oscHighpass,0.7071);
+  biquad8b.setHighpass(0,oscHighpass,0.7071);
 
 #ifdef USB_MIDI
   usbMIDI.setHandleNoteOff(OnNoteOff);
