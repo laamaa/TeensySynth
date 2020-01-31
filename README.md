@@ -2,12 +2,16 @@
 
 This is laamaa's fork of [jmechnich's](https://github.com/jmechnich/TeensySynth/) TeensySynth polyphonic MIDI synthesizer.
 
-Added features:
+Pros:
+* Second oscillator for all voices
 * Pitch LFO
 * Filter LFO
 * Filter Envelope
 * PWM
 * TouchOSC layout for MIDI control
+
+Cons:
+* Only 7 voice polyphony to ensure functionality with Teensy 3.2 / 3.1 (96mhz overclock)
 
 ---
 
