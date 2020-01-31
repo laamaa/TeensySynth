@@ -20,6 +20,20 @@ AudioSynthWaveformModulated waveform6;      //xy=1229.3333129882812,700
 AudioSynthWaveformModulated waveform6b;     //xy=1229.3333129882812,725
 AudioSynthWaveformModulated waveform7;      //xy=1229.3333129882812,775
 AudioSynthWaveformModulated waveform7b;     //xy=1229.3333129882812,800
+AudioFilterBiquad        biquad7;        //xy=429,643
+AudioFilterBiquad        biquad7b;       //xy=429,676
+AudioFilterBiquad        biquad1;        //xy=435,191
+AudioFilterBiquad        biquad5;        //xy=434,493
+AudioFilterBiquad        biquad2;        //xy=435,270
+AudioFilterBiquad        biquad5b;       //xy=434,524
+AudioFilterBiquad        biquad6;        //xy=434,571
+AudioFilterBiquad        biquad3;        //xy=435,349
+AudioFilterBiquad        biquad6b;       //xy=434,602
+AudioFilterBiquad        biquad4;        //xy=435,427
+AudioFilterBiquad        biquad1b;       //xy=436,225
+AudioFilterBiquad        biquad3b;       //xy=436,381
+AudioFilterBiquad        biquad4b;       //xy=436,459
+AudioFilterBiquad        biquad2b;       //xy=437,304
 AudioMixer4              waveform_sum_7; //xy=1577.3333129882812,806
 AudioMixer4              waveform_sum_6; //xy=1579.3333129882812,727
 AudioMixer4              waveform_sum_5; //xy=1582.3333129882812,647
@@ -99,20 +113,34 @@ AudioConnection          patchCord28(pwm_lfo, 0, waveform4b, 1);
 AudioConnection          patchCord29(pwm_lfo, 0, waveform5b, 1);
 AudioConnection          patchCord30(pwm_lfo, 0, waveform6b, 1);
 AudioConnection          patchCord31(pwm_lfo, 0, waveform7b, 1);
-AudioConnection          patchCord49(waveform7, 0, waveform_sum_7, 0);
-AudioConnection          patchCord50(waveform7b, 0, waveform_sum_7, 1);
-AudioConnection          patchCord53(waveform1, 0, waveform_sum_1, 0);
-AudioConnection          patchCord54(waveform5, 0, waveform_sum_5, 0);
-AudioConnection          patchCord55(waveform2, 0, waveform_sum_2, 0);
-AudioConnection          patchCord56(waveform5b, 0, waveform_sum_5, 1);
-AudioConnection          patchCord57(waveform6, 0, waveform_sum_6, 0);
-AudioConnection          patchCord58(waveform3, 0, waveform_sum_3, 0);
-AudioConnection          patchCord59(waveform6b, 0, waveform_sum_6, 1);
-AudioConnection          patchCord60(waveform4, 0, waveform_sum_4, 0);
-AudioConnection          patchCord61(waveform1b, 0, waveform_sum_1, 1);
-AudioConnection          patchCord62(waveform3b, 0, waveform_sum_3, 1);
-AudioConnection          patchCord63(waveform4b, 0, waveform_sum_4, 1);
-AudioConnection          patchCord64(waveform2b, 0, waveform_sum_2, 1);
+AudioConnection          patchCord33(waveform1, biquad1);
+AudioConnection          patchCord34(waveform1b, biquad1b);
+AudioConnection          patchCord35(waveform2, biquad2);
+AudioConnection          patchCord36(waveform2b, biquad2b);
+AudioConnection          patchCord37(waveform3, biquad3);
+AudioConnection          patchCord38(waveform3b, biquad3b);
+AudioConnection          patchCord39(waveform4, biquad4);
+AudioConnection          patchCord40(waveform4b, biquad4b);
+AudioConnection          patchCord41(waveform5, biquad5);
+AudioConnection          patchCord42(waveform5b, biquad5b);
+AudioConnection          patchCord43(waveform6, biquad6);
+AudioConnection          patchCord44(waveform6b, biquad6b);
+AudioConnection          patchCord45(waveform7, biquad7);
+AudioConnection          patchCord46(waveform7b, biquad7b);
+AudioConnection          patchCord49(biquad7, 0, waveform_sum_7, 0);
+AudioConnection          patchCord50(biquad7b, 0, waveform_sum_7, 1);
+AudioConnection          patchCord53(biquad1, 0, waveform_sum_1, 0);
+AudioConnection          patchCord54(biquad5, 0, waveform_sum_5, 0);
+AudioConnection          patchCord55(biquad2, 0, waveform_sum_2, 0);
+AudioConnection          patchCord56(biquad5b, 0, waveform_sum_5, 1);
+AudioConnection          patchCord57(biquad6, 0, waveform_sum_6, 0);
+AudioConnection          patchCord58(biquad3, 0, waveform_sum_3, 0);
+AudioConnection          patchCord59(biquad6b, 0, waveform_sum_6, 1);
+AudioConnection          patchCord60(biquad4, 0, waveform_sum_4, 0);
+AudioConnection          patchCord61(biquad1b, 0, waveform_sum_1, 1);
+AudioConnection          patchCord62(biquad3b, 0, waveform_sum_3, 1);
+AudioConnection          patchCord63(biquad4b, 0, waveform_sum_4, 1);
+AudioConnection          patchCord64(biquad2b, 0, waveform_sum_2, 1);
 AudioConnection          patchCord67(waveform_sum_7, 0, filter7, 0);
 AudioConnection          patchCord68(waveform_sum_7, 0, mixer7, 3);
 AudioConnection          patchCord69(waveform_sum_6, 0, filter6, 0);

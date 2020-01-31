@@ -1231,7 +1231,7 @@ void setup() {
   
   flt_env_carrier.amplitude(0);
   pwm_lfo.amplitude(0.9);
-/*
+
   int oscHighpass = 30;
   biquad1.setHighpass(0,oscHighpass,0.7071);
   biquad1b.setHighpass(0,oscHighpass,0.7071);
@@ -1247,9 +1247,7 @@ void setup() {
   biquad6b.setHighpass(0,oscHighpass,0.7071);
   biquad7.setHighpass(0,oscHighpass,0.7071);
   biquad7b.setHighpass(0,oscHighpass,0.7071);
-  biquad8.setHighpass(0,oscHighpass,0.7071);
-  biquad8b.setHighpass(0,oscHighpass,0.7071);
-*/
+
 #ifdef USB_MIDI
   usbMIDI.setHandleNoteOff(OnNoteOff);
   usbMIDI.setHandleNoteOn(OnNoteOn);
