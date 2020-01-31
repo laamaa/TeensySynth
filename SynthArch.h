@@ -20,9 +20,6 @@ AudioSynthWaveformModulated waveform6;      //xy=1229.3333129882812,700
 AudioSynthWaveformModulated waveform6b;     //xy=1229.3333129882812,725
 AudioSynthWaveformModulated waveform7;      //xy=1229.3333129882812,775
 AudioSynthWaveformModulated waveform7b;     //xy=1229.3333129882812,800
-AudioSynthWaveformModulated waveform8;      //xy=1229.3333129882812,850
-AudioSynthWaveformModulated waveform8b;     //xy=1229.3333129882812,875
-AudioMixer4              waveform_sum_8; //xy=1575.3333129882812,877
 AudioMixer4              waveform_sum_7; //xy=1577.3333129882812,806
 AudioMixer4              waveform_sum_6; //xy=1579.3333129882812,727
 AudioMixer4              waveform_sum_5; //xy=1582.3333129882812,647
@@ -37,7 +34,6 @@ AudioEffectEnvelope      flt_env_6;      //xy=1897.3333129882812,731
 AudioEffectEnvelope      flt_env_1;      //xy=1899.3333129882812,350
 AudioEffectEnvelope      flt_env_5;      //xy=1898.3333129882812,653
 AudioEffectEnvelope      flt_env_3;      //xy=1900.3333129882812,509
-AudioEffectEnvelope      flt_env_8;      //xy=1899.3333129882812,892
 AudioEffectEnvelope      flt_env_2;      //xy=1905.3333129882812,424
 AudioSynthWaveform       flt_lfo;        //xy=2021.3333129882812,613
 AudioMixer4              flt_sum_1;      //xy=2193.3333129882812,350
@@ -47,7 +43,6 @@ AudioMixer4              flt_sum_4;      //xy=2196.3333129882812,581
 AudioMixer4              flt_sum_6;      //xy=2196.3333129882812,735
 AudioMixer4              flt_sum_5;      //xy=2199.3333129882812,653
 AudioMixer4              flt_sum_7;      //xy=2199.3333129882812,815
-AudioMixer4              flt_sum_8;      //xy=2200.3333129882812,895
 AudioFilterStateVariable filter1;        //xy=2342.3333129882812,351
 AudioFilterStateVariable filter2;        //xy=2345.3333129882812,430
 AudioFilterStateVariable filter3;        //xy=2347.3333129882812,505
@@ -55,7 +50,6 @@ AudioFilterStateVariable filter4;        //xy=2347.3333129882812,584
 AudioFilterStateVariable filter5;        //xy=2348.3333129882812,653
 AudioFilterStateVariable filter6;        //xy=2349.3333129882812,734
 AudioFilterStateVariable filter7;        //xy=2350.3333129882812,819
-AudioFilterStateVariable filter8;        //xy=2360.3333129882812,891
 AudioMixer4              mixer1;         //xy=2518.3333129882812,376
 AudioMixer4              mixer2;         //xy=2518.3333129882812,436
 AudioMixer4              mixer3;         //xy=2518.3333129882812,496
@@ -63,7 +57,6 @@ AudioMixer4              mixer4;         //xy=2518.3333129882812,556
 AudioMixer4              mixer5;         //xy=2518.3333129882812,616
 AudioMixer4              mixer6;         //xy=2518.3333129882812,676
 AudioMixer4              mixer7;         //xy=2518.3333129882812,736
-AudioMixer4              mixer8;         //xy=2518.3333129882812,796
 AudioEffectEnvelope      envelope1;      //xy=2718.3333129882812,376
 AudioEffectEnvelope      envelope2;      //xy=2718.3333129882812,436
 AudioEffectEnvelope      envelope3;      //xy=2718.3333129882812,496
@@ -71,7 +64,6 @@ AudioEffectEnvelope      envelope4;      //xy=2718.3333129882812,556
 AudioEffectEnvelope      envelope5;      //xy=2718.3333129882812,616
 AudioEffectEnvelope      envelope6;      //xy=2718.3333129882812,676
 AudioEffectEnvelope      envelope7;      //xy=2718.3333129882812,736
-AudioEffectEnvelope      envelope8;      //xy=2718.3333129882812,796
 AudioMixer4              envmixer1;      //xy=2978.3333129882812,406
 AudioMixer4              envmixer2;      //xy=2978.3333129882812,526
 AudioMixer4              envmixer3;      //xy=2978.3333129882812,646
@@ -86,7 +78,6 @@ AudioConnection          patchCord4(pitch_lfo, 0, waveform4, 0);
 AudioConnection          patchCord5(pitch_lfo, 0, waveform5, 0);
 AudioConnection          patchCord6(pitch_lfo, 0, waveform6, 0);
 AudioConnection          patchCord7(pitch_lfo, 0, waveform7, 0);
-AudioConnection          patchCord8(pitch_lfo, 0, waveform8, 0);
 AudioConnection          patchCord9(pitch_lfo, 0, waveform1b, 0);
 AudioConnection          patchCord10(pitch_lfo, 0, waveform2b, 0);
 AudioConnection          patchCord11(pitch_lfo, 0, waveform3b, 0);
@@ -94,7 +85,6 @@ AudioConnection          patchCord12(pitch_lfo, 0, waveform4b, 0);
 AudioConnection          patchCord13(pitch_lfo, 0, waveform5b, 0);
 AudioConnection          patchCord14(pitch_lfo, 0, waveform6b, 0);
 AudioConnection          patchCord15(pitch_lfo, 0, waveform7b, 0);
-AudioConnection          patchCord16(pitch_lfo, 0, waveform8b, 0);
 AudioConnection          patchCord17(pwm_lfo, 0, waveform1, 1);
 AudioConnection          patchCord18(pwm_lfo, 0, waveform2, 1);
 AudioConnection          patchCord19(pwm_lfo, 0, waveform3, 1);
@@ -102,7 +92,6 @@ AudioConnection          patchCord20(pwm_lfo, 0, waveform4, 1);
 AudioConnection          patchCord21(pwm_lfo, 0, waveform5, 1);
 AudioConnection          patchCord22(pwm_lfo, 0, waveform6, 1);
 AudioConnection          patchCord23(pwm_lfo, 0, waveform7, 1);
-AudioConnection          patchCord24(pwm_lfo, 0, waveform8, 1);
 AudioConnection          patchCord25(pwm_lfo, 0, waveform1b, 1);
 AudioConnection          patchCord26(pwm_lfo, 0, waveform2b, 1);
 AudioConnection          patchCord27(pwm_lfo, 0, waveform3b, 1);
@@ -110,11 +99,8 @@ AudioConnection          patchCord28(pwm_lfo, 0, waveform4b, 1);
 AudioConnection          patchCord29(pwm_lfo, 0, waveform5b, 1);
 AudioConnection          patchCord30(pwm_lfo, 0, waveform6b, 1);
 AudioConnection          patchCord31(pwm_lfo, 0, waveform7b, 1);
-AudioConnection          patchCord32(pwm_lfo, 0, waveform8b, 1);
 AudioConnection          patchCord49(waveform7, 0, waveform_sum_7, 0);
 AudioConnection          patchCord50(waveform7b, 0, waveform_sum_7, 1);
-AudioConnection          patchCord51(waveform8, 0, waveform_sum_8, 0);
-AudioConnection          patchCord52(waveform8b, 0, waveform_sum_8, 1);
 AudioConnection          patchCord53(waveform1, 0, waveform_sum_1, 0);
 AudioConnection          patchCord54(waveform5, 0, waveform_sum_5, 0);
 AudioConnection          patchCord55(waveform2, 0, waveform_sum_2, 0);
@@ -127,8 +113,6 @@ AudioConnection          patchCord61(waveform1b, 0, waveform_sum_1, 1);
 AudioConnection          patchCord62(waveform3b, 0, waveform_sum_3, 1);
 AudioConnection          patchCord63(waveform4b, 0, waveform_sum_4, 1);
 AudioConnection          patchCord64(waveform2b, 0, waveform_sum_2, 1);
-AudioConnection          patchCord65(waveform_sum_8, 0, filter8, 0);
-AudioConnection          patchCord66(waveform_sum_8, 0, mixer8, 3);
 AudioConnection          patchCord67(waveform_sum_7, 0, filter7, 0);
 AudioConnection          patchCord68(waveform_sum_7, 0, mixer7, 3);
 AudioConnection          patchCord69(waveform_sum_6, 0, filter6, 0);
@@ -150,14 +134,12 @@ AudioConnection          patchCord84(flt_env_carrier, flt_env_4);
 AudioConnection          patchCord85(flt_env_carrier, flt_env_5);
 AudioConnection          patchCord86(flt_env_carrier, flt_env_6);
 AudioConnection          patchCord87(flt_env_carrier, flt_env_7);
-AudioConnection          patchCord88(flt_env_carrier, flt_env_8);
 AudioConnection          patchCord89(flt_env_7, 0, flt_sum_7, 0);
 AudioConnection          patchCord90(flt_env_4, 0, flt_sum_4, 0);
 AudioConnection          patchCord91(flt_env_6, 0, flt_sum_6, 0);
 AudioConnection          patchCord92(flt_env_1, 0, flt_sum_1, 0);
 AudioConnection          patchCord93(flt_env_5, 0, flt_sum_5, 0);
 AudioConnection          patchCord94(flt_env_3, 0, flt_sum_3, 0);
-AudioConnection          patchCord95(flt_env_8, 0, flt_sum_8, 0);
 AudioConnection          patchCord96(flt_env_2, 0, flt_sum_2, 0);
 AudioConnection          patchCord97(flt_lfo, 0, flt_sum_1, 1);
 AudioConnection          patchCord98(flt_lfo, 0, flt_sum_2, 1);
@@ -166,7 +148,6 @@ AudioConnection          patchCord100(flt_lfo, 0, flt_sum_4, 1);
 AudioConnection          patchCord101(flt_lfo, 0, flt_sum_5, 1);
 AudioConnection          patchCord102(flt_lfo, 0, flt_sum_6, 1);
 AudioConnection          patchCord103(flt_lfo, 0, flt_sum_7, 1);
-AudioConnection          patchCord104(flt_lfo, 0, flt_sum_8, 1);
 AudioConnection          patchCord105(flt_sum_1, 0, filter1, 1);
 AudioConnection          patchCord106(flt_sum_2, 0, filter2, 1);
 AudioConnection          patchCord107(flt_sum_3, 0, filter3, 1);
@@ -174,7 +155,6 @@ AudioConnection          patchCord108(flt_sum_4, 0, filter4, 1);
 AudioConnection          patchCord109(flt_sum_6, 0, filter6, 1);
 AudioConnection          patchCord110(flt_sum_5, 0, filter5, 1);
 AudioConnection          patchCord111(flt_sum_7, 0, filter7, 1);
-AudioConnection          patchCord112(flt_sum_8, 0, filter8, 1);
 AudioConnection          patchCord113(filter1, 0, mixer1, 0);
 AudioConnection          patchCord114(filter1, 1, mixer1, 1);
 AudioConnection          patchCord115(filter1, 2, mixer1, 2);
@@ -196,9 +176,6 @@ AudioConnection          patchCord130(filter6, 2, mixer6, 2);
 AudioConnection          patchCord131(filter7, 0, mixer7, 0);
 AudioConnection          patchCord132(filter7, 1, mixer7, 1);
 AudioConnection          patchCord133(filter7, 2, mixer7, 2);
-AudioConnection          patchCord134(filter8, 0, mixer8, 0);
-AudioConnection          patchCord135(filter8, 1, mixer8, 1);
-AudioConnection          patchCord136(filter8, 2, mixer8, 2);
 AudioConnection          patchCord137(mixer1, envelope1);
 AudioConnection          patchCord138(mixer1, 0, envmixer1, 2);
 AudioConnection          patchCord139(mixer2, envelope2);
@@ -213,8 +190,6 @@ AudioConnection          patchCord147(mixer6, envelope6);
 AudioConnection          patchCord148(mixer6, 0, envmixer3, 3);
 AudioConnection          patchCord149(mixer7, envelope7);
 AudioConnection          patchCord150(mixer7, 0, envmixer4, 2);
-AudioConnection          patchCord151(mixer8, envelope8);
-AudioConnection          patchCord152(mixer8, 0, envmixer4, 3);
 AudioConnection          patchCord153(envelope1, 0, envmixer1, 0);
 AudioConnection          patchCord154(envelope2, 0, envmixer1, 1);
 AudioConnection          patchCord155(envelope3, 0, envmixer2, 0);
@@ -222,7 +197,6 @@ AudioConnection          patchCord156(envelope4, 0, envmixer2, 1);
 AudioConnection          patchCord157(envelope5, 0, envmixer3, 0);
 AudioConnection          patchCord158(envelope6, 0, envmixer3, 1);
 AudioConnection          patchCord159(envelope7, 0, envmixer4, 0);
-AudioConnection          patchCord160(envelope8, 0, envmixer4, 1);
 AudioConnection          patchCord161(envmixer1, 0, mixerL, 0);
 AudioConnection          patchCord162(envmixer1, 0, mixerR, 0);
 AudioConnection          patchCord163(envmixer2, 0, mixerL, 1);

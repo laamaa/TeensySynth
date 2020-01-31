@@ -106,7 +106,7 @@ struct Oscillator {
 // synth architecture in separate file
 #include "SynthArch.h"
 
-#define NVOICES 8
+#define NVOICES 7
 Oscillator oscs[NVOICES] = {
   { &waveform1, &waveform1b, &waveform_sum_1, &filter1, &mixer1, &flt_sum_1, &envelope1, &flt_env_1, -1, 0 },
   { &waveform2, &waveform2b, &waveform_sum_2, &filter2, &mixer2, &flt_sum_2, &envelope2, &flt_env_2, -1, 0 },
@@ -115,7 +115,6 @@ Oscillator oscs[NVOICES] = {
   { &waveform5, &waveform5b, &waveform_sum_5, &filter5, &mixer5, &flt_sum_5, &envelope5, &flt_env_5, -1, 0 },
   { &waveform6, &waveform6b, &waveform_sum_6, &filter6, &mixer6, &flt_sum_6, &envelope6, &flt_env_6, -1, 0 },
   { &waveform7, &waveform7b, &waveform_sum_7, &filter7, &mixer7, &flt_sum_7, &envelope7, &flt_env_7, -1, 0 },
-  { &waveform8, &waveform8b, &waveform_sum_8, &filter8, &mixer8, &flt_sum_8, &envelope8, &flt_env_8, -1, 0 },
 };
 
 #define NPROGS 8
@@ -211,8 +210,8 @@ float    portamentoPos;
 //////////////////////////////////////////////////////////////////////
 // Handling of sounding and pressed notes
 //////////////////////////////////////////////////////////////////////
-int8_t notesOn[NVOICES]      = { -1, -1, -1, -1, -1, -1, -1, -1, };
-int8_t notesPressed[NVOICES] = { -1, -1, -1, -1, -1, -1, -1, -1, };
+int8_t notesOn[NVOICES]      = { -1, -1, -1, -1, -1, -1, -1, };
+int8_t notesPressed[NVOICES] = { -1, -1, -1, -1, -1, -1, -1, };
 
 inline void notesReset(int8_t* notes) {
   memset(notes,-1,NVOICES*sizeof(int8_t));
