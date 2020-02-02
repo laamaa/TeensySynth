@@ -90,66 +90,6 @@ short delaylineR[DELAY_LENGTH];
 //////////////////////////////////////////////////////////////////////
 // Data types and lookup tables
 //////////////////////////////////////////////////////////////////////
-struct Preset {
-  uint8_t currentProgram;
-  uint8_t currentOsc2Program;
-  
-  bool  polyOn;
-  bool  omniOn;
-  bool  velocityOn;
-  
-  bool  sustainPressed;
-  float channelVolume;
-  float oscBalance; // 0-1
-  float panorama;
-  float pitchBend;  // -1/+1 oct
-  float pitchScale;
-  int   octCorr;
-  int   osc2Octave;
-  int   osc2Detune;
-  float   oldPitchLfoDepth;
-  
-  // filter
-  FilterMode_t filterMode;
-  float filtFreq; // 20-AUDIO_SAMPLE_RATE_EXACT/2.5
-  float filtReso; // 0.9-5.0
-  float filtAtt;  // 0-1
-  
-  // filter lfo
-  float  fltLfoDepth;
-  float  fltLfoRate;
-  
-  // pitch lfo
-  float pitchLfoRate;
-  float pitchLfoDepth;
-  
-  // pwm lfo
-  float pwmLfoRate;
-  
-  // envelope
-  bool  envOn;
-  float envDelay;   // 0-200
-  float envAttack;  // 0-200
-  float envHold;    // 0-200
-  float envDecay;   // 0-200
-  float envSustain; // 0-1
-  float envRelease; // 0-200
-  
-  // filter envelope
-  bool  fltEnvOn;
-  bool  fltEnvInvert;
-  float fltEnvDelay;   // 0-200
-  float fltEnvAttack;  // 0-200
-  float fltEnvHold;    // 0-200
-  float fltEnvDecay;   // 0-200
-  float fltEnvSustain; // 0-1
-  float fltEnvRelease; // 0-200
-  float fltEnvDepth;   // 0-1
-  
-  // portamento
-  bool     portamentoOn;
-  uint16_t portamentoTime;
-}
 
 struct Oscillator {
   AudioSynthWaveformModulated* wf;
