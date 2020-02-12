@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout version="17" mode="1" orientation="vertical">
+	<tabpage name="MQ==" scalef="0.0" scalet="1.0" li_t="" li_c="gray" li_s="14" li_o="false" li_b="false" la_t="" la_c="gray" la_s="14" la_o="false" la_b="false" >
+		<control name="bGFiZWxfT1NDMQ==" x="684" y="18" w="40" h="264" color="red" type="labelv" text="T1NDSUxMQVRPUlM=" size="14" background="true" outline="true" />
+		<control name="cm90YXJ5OQ==" x="244" y="22" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="12" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="cm90YXJ5MTA=" x="244" y="162" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" />
+		<control name="cm90YXJ5MTE=" x="84" y="22" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" />
+		<control name="cm90YXJ5MTI=" x="84" y="162" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" />
+		<control name="bGFiZWwxMw==" x="224" y="22" w="20" h="120" color="red" type="labelv" text="QVRUQUNL" size="14" background="false" outline="false" />
+		<control name="bGFiZWwxNA==" x="224" y="162" w="20" h="120" color="red" type="labelv" text="REVDQVk=" size="14" background="false" outline="false" />
+		<control name="bGFiZWwxNQ==" x="64" y="22" w="20" h="120" color="red" type="labelv" text="U1VTVEFJTg==" size="14" background="false" outline="false" />
+		<control name="bGFiZWwxNg==" x="64" y="162" w="20" h="120" color="red" type="labelv" text="UkVMRUFTRQ==" size="14" background="false" outline="false" />
+		<control name="cm90YXJ5MTQ=" x="244" y="162" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="22" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="cm90YXJ5MTU=" x="84" y="22" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="23" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="cm90YXJ5MTY=" x="84" y="162" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="13" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWwxNw==" x="384" y="22" w="40" h="260" color="red" type="labelv" text="QU1QIEVOVkVMT1BF" size="14" background="true" outline="true" />
+		<control name="bGFiZWwzMw==" x="384" y="622" w="40" h="400" color="red" type="labelv" text="RklMVEVS" size="14" background="true" outline="true" />
+		<control name="cm90YXJ5MjE=" x="244" y="762" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="14" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWwzNA==" x="224" y="762" w="20" h="120" color="red" type="labelv" text="Q1VUT0ZG" size="14" background="false" outline="false" />
+		<control name="cm90YXJ5MjI=" x="244" y="902" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="15" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWwzNQ==" x="224" y="902" w="20" h="120" color="red" type="labelv" text="UkVTT05BTkNF" size="14" background="false" outline="false" />
+		<control name="cm90YXJ5MjY=" x="84" y="622" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="31" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWw0Mg==" x="64" y="622" w="20" h="120" color="red" type="labelv" text="TEZPIFNQRUVE" size="14" background="false" outline="false" />
+		<control name="cm90YXJ5Mjc=" x="84" y="762" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="32" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWw0Mw==" x="64" y="762" w="20" h="120" color="red" type="labelv" text="TEZPIERFUFRI" size="14" background="false" outline="false" />
+		<control name="bGFiZWw0NA==" x="684" y="622" w="40" h="400" color="red" type="labelv" text="TUFTVEVS" size="14" background="true" outline="true" />
+		<control name="cm90YXJ5Mjg=" x="564" y="622" w="100" h="100" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="18" data2f="0" data2t="2" sysex="" />
+		</control>
+		<control name="bGFiZWw0NQ==" x="544" y="622" w="20" h="100" color="red" type="labelv" text="TU9ERQ==" size="14" background="false" outline="false" />
+		<control name="cm90YXJ5MzA=" x="244" y="322" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="33" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="cm90YXJ5MzE=" x="244" y="462" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" />
+		<control name="cm90YXJ5MzI=" x="84" y="322" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" />
+		<control name="cm90YXJ5MzM=" x="84" y="462" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" />
+		<control name="bGFiZWw0OA==" x="224" y="322" w="20" h="120" color="red" type="labelv" text="QVRUQUNL" size="14" background="false" outline="false" />
+		<control name="bGFiZWw0OQ==" x="224" y="462" w="20" h="120" color="red" type="labelv" text="REVDQVk=" size="14" background="false" outline="false" />
+		<control name="bGFiZWw1MA==" x="64" y="322" w="20" h="120" color="red" type="labelv" text="U1VTVEFJTg==" size="14" background="false" outline="false" />
+		<control name="bGFiZWw1MQ==" x="64" y="462" w="20" h="120" color="red" type="labelv" text="UkVMRUFTRQ==" size="14" background="false" outline="false" />
+		<control name="cm90YXJ5MzQ=" x="244" y="462" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="34" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="cm90YXJ5MzU=" x="84" y="322" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="35" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="cm90YXJ5MzY=" x="84" y="462" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="36" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWw1Mg==" x="384" y="322" w="40" h="200" color="red" type="labelv" text="RklMVEVSIEVOVkVMT1BF" size="14" background="true" outline="true" />
+		<control name="dG9nZ2xlMQ==" x="384" y="542" w="40" h="40" color="red" scalef="0.0" scalet="1.0" type="toggle" local_off="false" >
+			<midi var ="x" type="0" channel="3" data1="37" data2f="0" data2t="1" sysex="" />
+		</control>
+		<control name="bGFiZWw1Mw==" x="384" y="522" w="40" h="20" color="red" type="labelh" text="KyAvIC0=" size="14" background="true" outline="false" />
+		<control name="cm90YXJ5Mzc=" x="244" y="622" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="17" data2f="0" data2t="3" sysex="" />
+		</control>
+		<control name="bGFiZWw1Ng==" x="224" y="622" w="20" h="120" color="red" type="labelv" text="TU9ERQ==" size="14" background="false" outline="false" />
+		<control name="cm90YXJ5Mzg=" x="564" y="742" w="100" h="100" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="5" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWw1Nw==" x="544" y="742" w="20" h="100" color="red" type="labelv" text="R0xJU1NBTkRP" size="14" background="false" outline="false" />
+		<control name="cm90YXJ5Mzk=" x="564" y="862" w="100" h="100" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="24" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWw1OA==" x="544" y="862" w="20" h="100" color="red" type="labelv" text="UFdNIFJBVEU=" size="14" background="false" outline="false" />
+		<control name="ZmFkZXIy" x="4" y="342" w="40" h="240" color="red" scalef="0.0" scalet="1.0" type="faderv" response="absolute" inverted="false" centered="false" >
+			<midi var ="x" type="0" channel="3" data1="38" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWw1OQ==" x="4" y="322" w="40" h="25" color="red" type="labelh" text="RGVwdGg=" size="12" background="true" outline="false" />
+		<control name="bGFiZWw2MA==" x="684" y="322" w="40" h="260" color="red" type="labelv" text="UElUQ0ggTEZP" size="14" background="true" outline="true" />
+		<control name="cm90YXJ5NDA=" x="544" y="322" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="39" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWw2MQ==" x="524" y="322" w="20" h="120" color="red" type="labelv" text="TEZPIFNQRUVE" size="14" background="false" outline="false" />
+		<control name="cm90YXJ5NDE=" x="544" y="462" w="120" h="120" color="red" scalef="0.0" scalet="1.0" type="rotaryh" response="absolute" inverted="false" centered="false" norollover="true" >
+			<midi var ="x" type="0" channel="3" data1="40" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWw2Mg==" x="524" y="462" w="20" h="120" color="red" type="labelv" text="TEZPIERFUFRI" size="14" background="false" outline="false" />
+		<control name="bXVsdGlmYWRlcjI=" x="484" y="22" w="180" h="100" color="red" scalef="0.0" scalet="1.0" type="multifaderh" inverted="false" centered="false" number="2" >
+			<midi var ="x2" type="0" channel="3" data1="42" data2f="1" data2t="8" sysex="" />
+			<midi var ="x1" type="0" channel="3" data1="41" data2f="1" data2t="8" sysex="" />
+		</control>
+		<control name="ZmFkZXIz" x="464" y="982" w="200" h="40" color="red" scalef="0.0" scalet="1.0" type="faderh" response="absolute" inverted="false" centered="false" >
+			<midi var ="x" type="0" channel="3" data1="7" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWw2NA==" x="464" y="962" w="200" h="20" color="red" type="labelh" text="Vk9MVU1F" size="14" background="true" outline="false" />
+		<control name="bGFiZWw2NQ==" x="444" y="22" w="20" h="100" color="red" type="labelv" text="VFlQRQ==" size="14" background="true" outline="false" />
+		<control name="bGFiZWw2Ng==" x="464" y="22" w="20" h="49" color="red" type="labelv" text="T1NDMQ==" size="13" background="true" outline="false" />
+		<control name="bGFiZWw2OA==" x="464" y="72" w="20" h="50" color="red" type="labelv" text="T1NDMg==" size="13" background="true" outline="false" />
+		<control name="ZmFkZXI0" x="484" y="133" w="180" h="40" color="red" scalef="0.0" scalet="1.0" type="faderh" response="absolute" inverted="false" centered="true" >
+			<midi var ="x" type="0" channel="3" data1="45" data2f="0" data2t="127" sysex="" />
+		</control>
+		<control name="bGFiZWw2OQ==" x="444" y="133" w="40" h="40" color="red" type="labelv" text="QkFM" size="14" background="true" outline="false" />
+		<control name="bXVsdGlmYWRlcjM=" x="484" y="182" w="180" h="100" color="red" scalef="0.0" scalet="1.0" type="multifaderh" inverted="false" centered="true" number="2" >
+			<midi var ="x2" type="0" channel="3" data1="44" data2f="0" data2t="127" sysex="" />
+			<midi var ="x1" type="0" channel="3" data1="43" data2f="0" data2t="4" sysex="" />
+		</control>
+		<control name="bGFiZWw3MA==" x="444" y="182" w="20" h="100" color="red" type="labelv" text="T1NDMg==" size="14" background="true" outline="false" />
+		<control name="bGFiZWw3MQ==" x="464" y="182" w="20" h="49" color="red" type="labelv" text="T0NU" size="13" background="true" outline="false" />
+		<control name="bGFiZWw3Mg==" x="464" y="232" w="20" h="50" color="red" type="labelv" text="RFQ=" size="13" background="true" outline="false" />
+		<control name="bGFiZWw3Mw==" x="444" y="182" w="40" h="100" color="red" type="labelv" text="" size="14" background="false" outline="true" />
+		<control name="bGFiZWw3NA==" x="444" y="22" w="40" h="100" color="red" type="labelv" text="" size="14" background="false" outline="true" />
+	</tabpage>
+</layout>

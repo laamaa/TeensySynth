@@ -1,10 +1,11 @@
 #include <Audio.h>
+#include <EEPROM.h>
 
 // set SYNTH_DEBUG to enable debug logging (1=most,2=all messages)
 #define SYNTH_DEBUG 1
 
 // define MIDI channel
-#define SYNTH_MIDICHANNEL 1
+#define SYNTH_MIDICHANNEL 3
 
 // inital poly mode (POLY, MONO or PORTAMENTO)
 #define SYNTH_INITIALMODE POLY
@@ -29,13 +30,16 @@
 //#define GAIN_MONO 1.
 #define GAIN_MONO 0.5
 
+//amount of presets to store in eprom
+#define NUM_PRESETS 1
+
 // define delay lines for modulation effects
 #define DELAY_LENGTH (24*AUDIO_BLOCK_SAMPLES)
 short delaylineL[DELAY_LENGTH];
 short delaylineR[DELAY_LENGTH];
 
 // audio memory
-#define AMEMORY 50
+#define AMEMORY 30
 
 // switch between USB and UART MIDI
 #ifdef USB_MIDI
@@ -77,6 +81,9 @@ short delaylineR[DELAY_LENGTH];
 #define CC_OSC2_OCTAVE 43
 #define CC_OSC2_DETUNE 44
 #define CC_OSC_BALANCE 45
+#define CC_SELECT_PRESET 46
+#define CC_LOAD_PRESET 47
+#define CC_SAVE_PRESET 48
 #define CC_SUSTAIN 64
 #define CC_PORTAMENTO 65
 #define CC_PORTAMENTO_CONTROL 84
@@ -136,6 +143,66 @@ enum FilterMode_t {
   FILTEROFF,
   FILTERMODE_N,
 };
+
+struct Preset {
+  uint8_t currentProgram;
+  uint8_t currentOsc2Program;
+  
+  bool  polyOn;
+  bool  omniOn;
+  bool  velocityOn;
+  
+  float channelVolume;
+  float oscBalance; // 0-1
+  float panorama;
+  float pitchScale;
+  int   octCorr;
+  int   osc2Octave;
+  int   osc2Detune;
+  
+  // filter
+  FilterMode_t filterMode;
+  float filtFreq; // 20-AUDIO_SAMPLE_RATE_EXACT/2.5
+  float filtReso; // 0.9-5.0
+  float filtAtt;  // 0-1
+  
+  // filter lfo
+  float  fltLfoDepth;
+  float  fltLfoRate;
+  
+  // pitch lfo
+  float pitchLfoRate;
+  float pitchLfoDepth;
+  
+  // pwm lfo
+  float pwmLfoRate;
+  
+  // envelope
+  bool  envOn;
+  float envDelay;
+  float envAttack;
+  float envHold;
+  float envDecay;
+  float envSustain;
+  float envRelease;
+  
+  // filter envelope
+  bool  fltEnvOn;
+  bool  fltEnvInvert;
+  float fltEnvDelay;
+  float fltEnvAttack;  
+  float fltEnvHold;    
+  float fltEnvDecay;   
+  float fltEnvSustain; 
+  float fltEnvRelease; 
+  float fltEnvDepth;   
+  
+  // portamento
+  bool     portamentoOn;
+  uint16_t portamentoTime;
+};
+
+Preset presets[NUM_PRESETS];
 
 //////////////////////////////////////////////////////////////////////
 // Global variables
@@ -206,6 +273,122 @@ uint16_t portamentoTime;
 int8_t   portamentoDir;
 float    portamentoStep;
 float    portamentoPos;
+
+inline void savePreset(uint8_t presetno){
+  if (presetno <= NUM_PRESETS){
+    presets[presetno] = {
+      currentProgram, currentOsc2Program, polyOn, omniOn, velocityOn, channelVolume, oscBalance, panorama, pitchScale, octCorr, 
+      osc2Octave, osc2Detune, filterMode, filtFreq, filtReso, filtAtt, fltLfoDepth, fltLfoRate, pitchLfoRate, pitchLfoDepth, pwmLfoRate, envOn,
+      envDelay, envAttack, envHold, envDecay, envSustain, envRelease, fltEnvOn, fltEnvInvert, fltEnvDelay, fltEnvAttack, fltEnvHold, fltEnvDecay,
+      fltEnvSustain, fltEnvRelease, fltEnvDepth, portamentoOn, portamentoTime
+    };
+  }
+  savePresetsToEeprom();  
+}
+
+inline void savePresetsToEeprom() {
+    #if SYNTH_DEBUG > 0
+      SYNTH_SERIAL.print ("Preset array size is ");
+      SYNTH_SERIAL.println (sizeof (presets));
+      SYNTH_SERIAL.println ("Saving preset data to EEPROM");
+    #endif  
+    EEPROM.put(1,presets);
+}
+
+
+inline void loadPresetsFromEeprom() {
+  #if SYNTH_DEBUG > 0
+  SYNTH_SERIAL.println("Loading presets from EEPROM");
+  #endif  
+  EEPROM.get(1, presets);
+  #if SYNTH_DEBUG > 0
+  SYNTH_SERIAL.println(presets[0].currentProgram);
+  #endif
+}
+
+inline void loadPreset(uint8_t presetno){
+  currentProgram      = presets[presetno].currentProgram;
+  currentOsc2Program  = presets[presetno].currentOsc2Program;
+  polyOn              = presets[presetno].polyOn;
+  omniOn              = presets[presetno].omniOn;
+  velocityOn          = presets[presetno].velocityOn;    
+  channelVolume       = presets[presetno].channelVolume;
+  oscBalance          = presets[presetno].oscBalance;
+  panorama            = presets[presetno].panorama;
+  pitchScale          = presets[presetno].pitchScale;
+  octCorr             = presets[presetno].octCorr;
+  osc2Octave          = presets[presetno].osc2Octave;
+  osc2Detune          = presets[presetno].osc2Detune;
+
+  filterMode          = presets[presetno].filterMode;
+  filtFreq            = presets[presetno].filtFreq;
+  filtReso            = presets[presetno].filtReso;
+  filtAtt             = presets[presetno].filtAtt;
+
+  // filter lfo
+  fltLfoDepth         = presets[presetno].fltLfoDepth;
+  fltLfoRate          = presets[presetno].fltLfoRate;
+
+  // pitch lfo
+  pitchLfoDepth       = presets[presetno].pitchLfoDepth;
+  pitchLfoRate        = presets[presetno].pitchLfoRate;
+
+  // pwm lfo
+  pwmLfoRate          = presets[presetno].pwmLfoRate;
+
+  // envelope
+  envOn               = presets[presetno].envOn;
+  envDelay            = presets[presetno].envDelay;
+  envAttack           = presets[presetno].envAttack;
+  envHold             = presets[presetno].envHold;
+  envDecay            = presets[presetno].envDecay;
+  envSustain          = presets[presetno].envSustain;
+  envRelease          = presets[presetno].envRelease;
+
+  // filter envelope
+  fltEnvOn            = presets[presetno].fltEnvOn;
+  fltEnvInvert        = presets[presetno].fltEnvInvert;
+  fltEnvDelay         = presets[presetno].fltEnvDelay;
+  fltEnvAttack        = presets[presetno].fltEnvAttack;
+  fltEnvHold          = presets[presetno].fltEnvHold;
+  fltEnvDecay         = presets[presetno].fltEnvDecay;
+  fltEnvSustain       = presets[presetno].fltEnvSustain;
+  fltEnvRelease       = presets[presetno].fltEnvRelease;
+
+  // portamento
+  portamentoOn        = presets[presetno].portamentoOn;
+  portamentoTime      = presets[presetno].portamentoTime;
+
+  updateProgram();
+  updateOsc2Program();
+  updatePolyMode();
+  updateFilter();
+  updateFilterMode();
+  updateFilterLFO();
+  updatePitchLFO();
+  updatePwmLFO();
+  updateEnvelope();
+  updatePan();
+
+  #if SYNTH_DEBUG > 0
+    SYNTH_SERIAL.print ("Loaded preset ");
+    SYNTH_SERIAL.println (presetno);
+  #endif  
+
+}
+
+bool checkEeprom() {
+  #if SYNTH_DEBUG > 0
+    SYNTH_SERIAL.println ("Checking if eeprom contains 42 in slot 0, so we know if there is preset data");
+  #endif  
+  byte checkvalue = EEPROM.read(0);
+  if (checkvalue == 42) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // Handling of sounding and pressed notes
@@ -342,6 +525,9 @@ void resetAll() {
   polyOn     = true;
   omniOn     = false;
   velocityOn = true;
+
+  osc2Octave = 0;
+  osc2Detune = 0;
   
   filterMode     = LOWPASS;
   sustainPressed = false;
@@ -401,11 +587,12 @@ void resetAll() {
   updatePwmLFO();
   updateEnvelope();
   updatePan();
+  
 }
 
+
+
 inline void updateProgram() {
-/*  if (currentProgram==WAVEFORM_PULSE) octCorr = 1;
-  else                   octCorr = 0; */
     
   Oscillator *o=oscs,*end=oscs+NVOICES;
   do {
@@ -555,6 +742,7 @@ inline void allOff() {
   } while(++o < end);
   notesReset(notesOn);
 }
+
 
 //////////////////////////////////////////////////////////////////////
 // MIDI handlers
@@ -930,28 +1118,11 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     }
     break;
   case CC_OSC2_OCTAVE:
-/*    switch (value) {
-      case 0:
-        osc2Octave = -24;
-        break;
-      case 1:
-        osc2Octave = -12;
-        break;
-      case 2:
-        osc2Octave = 0;
-        break;
-      case 3:
-        osc2Octave = +12;
-        break;
-      case 4:
-        osc2Octave = +24;
-        break;
-    } */
     osc2Octave = -24 + round((value * DIV127) * 48);
     updatePitch();
     break;
   case CC_OSC2_DETUNE:
-    osc2Detune = (-64 + value) / 4;
+    osc2Detune = (-64 + value) / 6;
     updatePitch();
     break;
   case CC_OSC_BALANCE:
@@ -1260,7 +1431,7 @@ void setup() {
   usbMIDI.setHandleAfterTouch(OnAfterTouch);
   usbMIDI.setHandleSysEx(OnSysEx);
   //usbMIDI.setHandleRealTimeSystem(OnRealTimeSystem);
-  usbMIDI.setHandleTimeCodeQuarterFrame(OnTimeCodeQFrame);
+  //usbMIDI.setHandleTimeCodeQuarterFrame(OnTimeCodeQFrame);
 #else
   MIDI.begin();
   MIDI.setHandleNoteOff(OnNoteOff);
@@ -1287,6 +1458,37 @@ void setup() {
   SYNTH_SERIAL.println("UART_MIDI enabled");
 #endif // USB_MIDI
 #endif // SYNTH_DEBUG
+
+  //initialize default presets
+  for (int presetno=0; presetno < NUM_PRESETS; presetno++){
+    presets[presetno] = {
+      currentProgram, currentOsc2Program, polyOn, omniOn, velocityOn, sustainPressed, channelVolume, oscBalance, panorama, pitchScale, octCorr, 
+      osc2Octave, osc2Detune, filterMode, filtFreq, filtReso, filtAtt, fltLfoDepth, fltLfoRate, pitchLfoRate, pitchLfoDepth, pwmLfoRate, envOn,
+      envDelay, envAttack, envHold, envDecay, envSustain, envRelease, fltEnvOn, fltEnvInvert, fltEnvDelay, fltEnvAttack, fltEnvHold, fltEnvDecay,
+      fltEnvSustain, fltEnvRelease, fltEnvDepth, portamentoOn, portamentoTime
+    };
+  }
+
+  if (!checkEeprom()) { 
+    #if SYNTH_DEBUG > 0
+      SYNTH_SERIAL.println ("No preset data found, saving initial presets to EEPROM");
+    #endif
+    EEPROM.put(1,presets);
+    EEPROM.write(0,42); //just a number so we know that our preset data is there
+    #if SYNTH_DEBUG > 0
+      SYNTH_SERIAL.println ("Save complete");
+    #endif
+
+  } else {
+    #if SYNTH_DEBUG > 0
+      SYNTH_SERIAL.println ("Preset data found from EEPROM, loading it");
+    #endif
+    loadPresetsFromEeprom();    
+    #if SYNTH_DEBUG > 0
+      SYNTH_SERIAL.println ("Load complete");
+    #endif
+  }
+
 }
 
 void loop() {
