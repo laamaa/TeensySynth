@@ -1462,7 +1462,7 @@ void setup() {
   //initialize default presets
   for (int presetno=0; presetno < NUM_PRESETS; presetno++){
     presets[presetno] = {
-      currentProgram, currentOsc2Program, polyOn, omniOn, velocityOn, sustainPressed, channelVolume, oscBalance, panorama, pitchScale, octCorr, 
+      currentProgram, currentOsc2Program, polyOn, omniOn, velocityOn, channelVolume, oscBalance, panorama, pitchScale, octCorr, 
       osc2Octave, osc2Detune, filterMode, filtFreq, filtReso, filtAtt, fltLfoDepth, fltLfoRate, pitchLfoRate, pitchLfoDepth, pwmLfoRate, envOn,
       envDelay, envAttack, envHold, envDecay, envSustain, envRelease, fltEnvOn, fltEnvInvert, fltEnvDelay, fltEnvAttack, fltEnvHold, fltEnvDecay,
       fltEnvSustain, fltEnvRelease, fltEnvDepth, portamentoOn, portamentoTime
