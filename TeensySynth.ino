@@ -31,12 +31,7 @@
 #define GAIN_MONO 0.5
 
 //amount of presets to store in eprom
-#define NUM_PRESETS 1
-
-// define delay lines for modulation effects
-#define DELAY_LENGTH (24*AUDIO_BLOCK_SAMPLES)
-short delaylineL[DELAY_LENGTH];
-short delaylineR[DELAY_LENGTH];
+#define NUM_PRESETS 10
 
 // audio memory
 #define AMEMORY 30
@@ -202,8 +197,6 @@ struct Preset {
   uint16_t portamentoTime;
 };
 
-Preset presets[NUM_PRESETS];
-
 //////////////////////////////////////////////////////////////////////
 // Global variables
 //////////////////////////////////////////////////////////////////////
@@ -274,6 +267,15 @@ int8_t   portamentoDir;
 float    portamentoStep;
 float    portamentoPos;
 
+//preset related
+uint8_t selectedPreset;
+
+//allocate memory for presets
+Preset presets[NUM_PRESETS];
+
+//////////////////////////////////////////////////////////////////////
+// Handling of loading and saving presets
+//////////////////////////////////////////////////////////////////////
 inline void savePreset(uint8_t presetno){
   if (presetno <= NUM_PRESETS){
     presets[presetno] = {
@@ -1129,6 +1131,22 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     oscBalance = value * DIV127;
     updateOscBalance();
     break;
+  case CC_SELECT_PRESET:
+    if (value <= NUM_PRESETS){
+      selectedPreset = value;  
+    }
+    break;
+  case CC_LOAD_PRESET:
+    if (selectedPreset <= NUM_PRESETS){
+      loadPreset(selectedPreset);
+    }
+    break;
+  case CC_SAVE_PRESET:
+    if (selectedPreset <= NUM_PRESETS){
+      savePreset(selectedPreset);
+    }
+    break;
+    
   default:
 #if SYNTH_DEBUG > 0
     SYNTH_SERIAL.print("Unhandled Control Change: channel ");
@@ -1313,9 +1331,6 @@ void printInfo() {
   SYNTH_SERIAL.print("Envelope Release:     ");
   SYNTH_SERIAL.println(envRelease);
   SYNTH_SERIAL.println();
-  SYNTH_SERIAL.print("Delay Line Length:    ");
-  SYNTH_SERIAL.println(DELAY_LENGTH);
-  SYNTH_SERIAL.println();
   SYNTH_SERIAL.print("Portamento On:        ");
   SYNTH_SERIAL.println(portamentoOn);
   SYNTH_SERIAL.print("Portamento Time:      ");
@@ -1364,6 +1379,14 @@ void selectCommand(char c) {
   case ' ':
     // send note off
     allOff();
+    break;
+  case 'l':
+    //load preset from slot 0
+    loadPreset(0);
+    break;
+  case 'p':
+    //save preset to slot 0
+    savePreset(0);
     break;
   default:
     break;
@@ -1487,6 +1510,7 @@ void setup() {
     #if SYNTH_DEBUG > 0
       SYNTH_SERIAL.println ("Load complete");
     #endif
+    loadPreset(0);
   }
 
 }
