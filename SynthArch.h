@@ -92,8 +92,11 @@ AudioMixer4              envmixer1;      //xy=2020,220
 AudioMixer4              envmixer2;      //xy=2020,340
 AudioMixer4              envmixer3;      //xy=2020,460
 AudioMixer4              envmixer4;      //xy=2025,595
+AudioMixer4              env_sum;
+AudioMixer4              mix_fx;
 AudioMixer4              mixerL;         //xy=2280,280
 AudioMixer4              mixerR;         //xy=2283,485
+AudioEffectEnsemble      ensemble;
 AudioOutputI2S           i2s1;           //xy=2761,355
 AudioConnection          patchCord1(pitch_lfo, 0, waveform1, 0);
 AudioConnection          patchCord2(pitch_lfo, 0, waveform2, 0);
@@ -252,16 +255,22 @@ AudioConnection          patchCord154(envelope7, 0, envmixer4, 0);
 AudioConnection          patchCord155(envelope5, 0, envmixer3, 0);
 AudioConnection          patchCord156(envelope4, 0, envmixer2, 1);
 AudioConnection          patchCord157(envelope6, 0, envmixer3, 1);
-AudioConnection          patchCord158(envmixer1, 0, mixerL, 0);
-AudioConnection          patchCord159(envmixer1, 0, mixerR, 0);
-AudioConnection          patchCord160(envmixer2, 0, mixerL, 1);
-AudioConnection          patchCord161(envmixer2, 0, mixerR, 1);
-AudioConnection          patchCord162(envmixer3, 0, mixerL, 2);
-AudioConnection          patchCord163(envmixer3, 0, mixerR, 2);
-AudioConnection          patchCord164(envmixer4, 0, mixerL, 3);
-AudioConnection          patchCord165(envmixer4, 0, mixerR, 3);
-AudioConnection          patchCord166(mixerL, 0, i2s1, 0);
-AudioConnection          patchCord167(mixerR, 0, i2s1, 1);
+AudioConnection          patchCord158(envmixer1, 0, env_sum, 0);
+AudioConnection          patchCord159(envmixer2, 0, env_sum, 1);
+AudioConnection          patchCord160(envmixer3, 0, env_sum, 2);
+AudioConnection          patchCord161(envmixer4, 0, env_sum, 3);
+
+AudioConnection          patchCord162(env_sum, 0, ensemble, 0);
+AudioConnection          patchCord163(ensemble,0,mixerL,1); 
+AudioConnection          patchCord164(ensemble,1,mixerR,1);
+
+AudioConnection          patchCord165(env_sum, 0, mixerL, 0);
+AudioConnection          patchCord166(env_sum, 0, mixerR, 0);
+
+
+
+AudioConnection          patchCord167(mixerL, 0, i2s1, 0);
+AudioConnection          patchCord168(mixerR, 0, i2s1, 1);
 AudioControlSGTL5000     sgtl5000_1;     //xy=591,84
 // GUItool: end automatically generated code
 

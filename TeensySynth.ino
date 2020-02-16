@@ -34,8 +34,11 @@
 //amount of presets to store in eprom
 #define NUM_PRESETS 10
 
+//overwrite eeprom with initial data
+#define FORCE_INITIALIZE_PRESETS false
+
 // audio memory
-#define AMEMORY 30
+#define AMEMORY 35
 
 #define SYNTH_SERIAL Serial
 
@@ -80,6 +83,8 @@
 #define CC_SELECT_PRESET 46
 #define CC_LOAD_PRESET 47
 #define CC_SAVE_PRESET 48
+#define CC_CHORUS_TOGGLE 49
+#define CC_PITCH_LFO_MODE 50
 #define CC_SUSTAIN 64
 #define CC_PORTAMENTO 65
 #define CC_PORTAMENTO_CONTROL 84
@@ -200,6 +205,8 @@ struct Preset {
   // portamento
   bool     portamentoOn;
   uint16_t portamentoTime;
+
+  bool chorusOn;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -227,6 +234,7 @@ int   octCorr;
 int   osc2Octave;
 int   osc2Detune;
 float   oldPitchLfoDepth;
+float   oldPitchLfoRate;
 
 // filter
 FilterMode_t filterMode;
@@ -272,6 +280,8 @@ int8_t   portamentoDir;
 float    portamentoStep;
 float    portamentoPos;
 
+bool chorusOn;
+
 //preset related
 uint8_t selectedPreset;
 
@@ -287,7 +297,7 @@ inline void savePreset(uint8_t presetno){
       currentProgram, currentOsc2Program, polyOn, omniOn, velocityOn, channelVolume, oscBalance, panorama, pitchScale, octCorr, 
       osc2Octave, osc2Detune, filterMode, filtFreq, filtReso, filtAtt, fltLfoDepth, fltLfoRate, pitchLfoRate, pitchLfoDepth, pwmLfoRate, envOn,
       envDelay, envAttack, envHold, envDecay, envSustain, envRelease, fltEnvOn, fltEnvInvert, fltEnvDelay, fltEnvAttack, fltEnvHold, fltEnvDecay,
-      fltEnvSustain, fltEnvRelease, fltEnvDepth, portamentoOn, portamentoTime
+      fltEnvSustain, fltEnvRelease, fltEnvDepth, portamentoOn, portamentoTime, chorusOn 
     };
   }
   savePresetsToEeprom();  
@@ -365,6 +375,8 @@ inline void loadPreset(uint8_t presetno){
   // portamento
   portamentoOn        = presets[presetno].portamentoOn;
   portamentoTime      = presets[presetno].portamentoTime;
+
+  chorusOn            = presets[presetno].chorusOn;
 
   updateProgram();
   updateOsc2Program();
@@ -543,6 +555,7 @@ void resetAll() {
   pitchBend      = 0;
   pitchScale     = 12./2;
   oldPitchLfoDepth = 999; //hacky way to use modwheel - set original lfo value as impossible value 999 to know we're not using the modwheel atm
+  oldPitchLfoRate = 999;
   
   // filter
   filtFreq = 12000.;
@@ -585,6 +598,8 @@ void resetAll() {
   portamentoDir  = 0;
   portamentoStep = 0;
   portamentoPos  = -1;
+
+  chorusOn = false;
 
   updatePolyMode();
   updateFilter();
@@ -639,10 +654,17 @@ inline void updatePan() {
   float left=norm, right=norm;
   if (panorama < 0.5) right *= 2*panorama;
   else left *= 2*(1-panorama);
-
-  for (uint8_t i=0; i<4; ++i) {
+  if (chorusOn) {
+    left = left/2;
+    right = right/2;
+  }
+  for (uint8_t i=0; i<4; ++i){
     mixerL.gain(i,left);
     mixerR.gain(i,right);
+  }
+  if (!chorusOn){
+    mixerL.gain(1,0);
+    mixerR.gain(1,0);
   }
 }
 
@@ -893,13 +915,17 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     break;
 
   case CC_MODULATION:
-    if (value != 0 && oldPitchLfoDepth == 999) {
+    if (value != 0 && oldPitchLfoDepth == 999 && oldPitchLfoRate == 999) {
       oldPitchLfoDepth = pitchLfoDepth;
+      oldPitchLfoRate = pitchLfoRate;
     }
-      pitchLfoDepth = (0.05/(1+exp(-S_CURVE*(value-64))));
-    if (value == 0 && oldPitchLfoDepth != 999) {
+      pitchLfoDepth = (0.04/(1+exp(-S_CURVE*(value-64))));
+      pitchLfoRate = (10/(1+exp(-S_CURVE*(value-64))));
+    if (value == 0 && oldPitchLfoDepth != 999 && oldPitchLfoRate != 999) {
       pitchLfoDepth = oldPitchLfoDepth;
+      pitchLfoRate = oldPitchLfoRate;
       oldPitchLfoDepth = 999; 
+      oldPitchLfoRate = 999;
     }
     updatePitchLFO();
     break;
@@ -1151,7 +1177,11 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
       savePreset(selectedPreset);
     }
     break;
-    
+  case CC_CHORUS_TOGGLE:
+    if (value == 0) chorusOn = false;
+    else chorusOn = true;
+    updatePan();
+    break;
   default:
 #if SYNTH_DEBUG > 0
     SYNTH_SERIAL.print("Unhandled Control Change: channel ");
@@ -1494,7 +1524,7 @@ if (SERIALMIDI) {
     };
   }
 
-  if (!checkEeprom()) { 
+  if (!checkEeprom() || FORCE_INITIALIZE_PRESETS) { 
     #if SYNTH_DEBUG > 0
       SYNTH_SERIAL.println ("No preset data found, saving initial presets to EEPROM");
     #endif

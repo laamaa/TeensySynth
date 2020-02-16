@@ -1,17 +1,22 @@
-## TeensySynth - a polyphonic MIDI synthesizer for Teensy 3.x
+## TeensySynth - a polyphonic MIDI synthesizer for Teensy 4.0
 
 This is laamaa's fork of [jmechnich's](https://github.com/jmechnich/TeensySynth/) TeensySynth polyphonic MIDI synthesizer.
 
+Development currently done for Teensy 4.0, lighter 3.2 compatible code can be found in a separate branch.
+
+Requirements:
+Teensy 4.0 or something as powerful
+Quarterturn's Teensy Ensemble Chorus effect: https://github.com/quarterturn/teensy3-ensemble-chorus
+
 Pros:
+* Presets
 * Second oscillator for all voices
 * Pitch LFO
 * Filter LFO
 * Filter Envelope
 * PWM
+* Warm ensemble chorus
 * TouchOSC layout for MIDI control
-
-Cons:
-* Only 7 voice polyphony to ensure functionality with Teensy 3.2 / 3.1 (96mhz overclock)
 
 ---
 
