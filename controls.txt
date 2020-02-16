@@ -1,3 +1,5 @@
+This document is currently out of date. For current list, see the #defines in TeensySynth.ino
+
 --------------------------------------------------------------------------------
 CC# | Name                   | Function
 --------------------------------------------------------------------------------

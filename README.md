@@ -5,20 +5,27 @@ This is laamaa's fork of [jmechnich's](https://github.com/jmechnich/TeensySynth/
 Development currently done for Teensy 4.0, lighter 3.2 compatible code can be found in a separate branch.
 
 Requirements:
-Teensy 4.0 or something as powerful
-Quarterturn's Teensy Ensemble Chorus effect: https://github.com/quarterturn/teensy3-ensemble-chorus
+* Teensy 4.0 or something as powerful
+* Quarterturn's Teensy Ensemble Chorus effect: https://github.com/quarterturn/teensy3-ensemble-chorus
 
-Pros:
+Additions to the original:
 * Presets
 * Second oscillator for all voices
 * Pitch LFO
 * Filter LFO
 * Filter Envelope
 * PWM
-* Warm ensemble chorus
+* Warm ensemble chorus by [Quarterturn](https://github.com/quarterturn/teensy3-ensemble-chorus)
 * TouchOSC layout for MIDI control
 
+Things worse than in the original:
+* Requires more power
+* Nice code was turned into a mess
+* Documentation is horribly out of date since I change stuff all the time
+
 ---
+
+## Original readme:
 
 ### Features
 * 8-voice polyphony
