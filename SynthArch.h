@@ -64,6 +64,7 @@ AudioMixer4              flt_sum_6;      //xy=1238,549
 AudioMixer4              flt_sum_7;      //xy=1238,623
 AudioMixer4              flt_sum_8;      //xy=1240,696
 AudioMixer4              flt_sum_5;      //xy=1241,467
+/*
 AudioFilterStateVariable filter1;        //xy=1384,165
 AudioFilterStateVariable filter2;        //xy=1387,244
 AudioFilterStateVariable filter3;        //xy=1389,319
@@ -72,6 +73,16 @@ AudioFilterStateVariable filter5;        //xy=1390,467
 AudioFilterStateVariable filter6;        //xy=1391,548
 AudioFilterStateVariable filter7;        //xy=1393,621
 AudioFilterStateVariable filter8;        //xy=1396,695
+*/
+AudioFilterMoog filter1;        //xy=1384,165
+AudioFilterMoog filter2;        //xy=1387,244
+AudioFilterMoog filter3;        //xy=1389,319
+AudioFilterMoog filter4;        //xy=1389,398
+AudioFilterMoog filter5;        //xy=1390,467
+AudioFilterMoog filter6;        //xy=1391,548
+AudioFilterMoog filter7;        //xy=1393,621
+AudioFilterMoog filter8;        //xy=1396,695
+
 AudioMixer4              mixer2;         //xy=1560,250
 AudioMixer4              mixer3;         //xy=1560,320
 AudioMixer4              mixer1;         //xy=1561,169

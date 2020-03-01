@@ -6,7 +6,6 @@ Development currently done for Teensy 4.0, lighter 3.2 compatible code can be fo
 
 Requirements:
 * Teensy 4.0 or something as powerful
-* Quarterturn's Teensy Ensemble Chorus effect: https://github.com/quarterturn/teensy3-ensemble-chorus
 
 Additions to the original:
 * Presets
@@ -17,6 +16,7 @@ Additions to the original:
 * PWM
 * Warm ensemble chorus by [Quarterturn](https://github.com/quarterturn/teensy3-ensemble-chorus)
 * TouchOSC layout for MIDI control
+* Moog style filter from [DragonSifu's Digital Handdrum project](https://github.com/DragonSifu/Digital-Handdrum)
 
 Things worse than in the original:
 * Requires more power

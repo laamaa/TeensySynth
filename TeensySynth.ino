@@ -1,6 +1,8 @@
 #include <Audio.h>
 #include <EEPROM.h>
 #include <MIDI.h>
+#include "filter_moog.h"
+#include "effect_ensemble.h"
 
 // set SYNTH_DEBUG to enable debug logging (1=most,2=all messages)
 #define SYNTH_DEBUG 1
@@ -85,6 +87,7 @@
 #define CC_SAVE_PRESET 48
 #define CC_CHORUS_TOGGLE 49
 #define CC_PITCH_LFO_MODE 50
+#define CC_FILTER_DRIVE 51
 #define CC_SUSTAIN 64
 #define CC_PORTAMENTO 65
 #define CC_PORTAMENTO_CONTROL 84
@@ -105,7 +108,8 @@ struct Oscillator {
   AudioSynthWaveformModulated* wf;
   AudioSynthWaveformModulated* wf2;
   AudioMixer4*                 wf_sum;
-  AudioFilterStateVariable*    filt;
+  //AudioFilterStateVariable*    filt;
+  AudioFilterMoog*    filt;
   AudioMixer4*                 mix;
   AudioMixer4*                 flt_sum;
   AudioEffectEnvelope*         env;
@@ -170,6 +174,7 @@ struct Preset {
   float filtFreq; // 20-AUDIO_SAMPLE_RATE_EXACT/2.5
   float filtReso; // 0.9-5.0
   float filtAtt;  // 0-1
+  float filtDrive;
   
   // filter lfo
   float  fltLfoDepth;
@@ -241,6 +246,7 @@ FilterMode_t filterMode;
 float filtFreq; // 20-AUDIO_SAMPLE_RATE_EXACT/2.5
 float filtReso; // 0.9-5.0
 float filtAtt;  // 0-1
+float filtDrive;
 
 // filter lfo
 float  fltLfoDepth;
@@ -295,7 +301,7 @@ inline void savePreset(uint8_t presetno){
   if (presetno <= NUM_PRESETS){
     presets[presetno] = {
       currentProgram, currentOsc2Program, polyOn, omniOn, velocityOn, channelVolume, oscBalance, panorama, pitchScale, octCorr, 
-      osc2Octave, osc2Detune, filterMode, filtFreq, filtReso, filtAtt, fltLfoDepth, fltLfoRate, pitchLfoRate, pitchLfoDepth, pwmLfoRate, envOn,
+      osc2Octave, osc2Detune, filterMode, filtFreq, filtReso, filtAtt, filtDrive, fltLfoDepth, fltLfoRate, pitchLfoRate, pitchLfoDepth, pwmLfoRate, envOn,
       envDelay, envAttack, envHold, envDecay, envSustain, envRelease, fltEnvOn, fltEnvInvert, fltEnvDelay, fltEnvAttack, fltEnvHold, fltEnvDecay,
       fltEnvSustain, fltEnvRelease, fltEnvDepth, portamentoOn, portamentoTime, chorusOn 
     };
@@ -341,6 +347,7 @@ inline void loadPreset(uint8_t presetno){
   filtFreq            = presets[presetno].filtFreq;
   filtReso            = presets[presetno].filtReso;
   filtAtt             = presets[presetno].filtAtt;
+  filtDrive           = presets[presetno].filtDrive;
 
   // filter lfo
   fltLfoDepth         = presets[presetno].fltLfoDepth;
@@ -469,6 +476,7 @@ inline void updateFilter() {
   do {
     o->filt->frequency(filtFreq);
     o->filt->resonance(filtReso);
+    o->filt->drive(filtDrive);
   } while (++o < end);
 }
 
@@ -561,6 +569,7 @@ void resetAll() {
   filtFreq = 12000.;
   filtReso = 2;
   filtAtt  = 1.;
+  filtDrive = 2;
 
   // filter lfo
   fltLfoDepth = 0;
@@ -728,7 +737,7 @@ inline void updateOscBalance()
 //////////////////////////////////////////////////////////////////////
 inline float noteToFreq(float note) {
   // Sets all notes as an offset of A4 (#69)
-  if (portamentoOn) note = portamentoPos;
+  //if (portamentoOn) note = portamentoPos;
   return SYNTH_TUNING*pow(2,(note - 69)/12.+pitchBend/pitchScale+octCorr);
 }
 
@@ -933,7 +942,7 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
   case CC_PORTAMENTO_TIME: // portamento time
   {
     float portamentoRange = portamentoStep*portamentoTime;
-    portamentoTime = 3000/(1+exp(-S_CURVE*(value-64)));
+    portamentoTime = 10000/(1+exp(-S_CURVE*(value-64)));
     portamentoStep = portamentoRange/portamentoTime;
     break;
   }
@@ -967,12 +976,12 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     updateEnvelope();
     break;
   case CC_FLT_FREQ: // filter frequency
-    filtFreq = 30+(11970/(1+exp(-S_CURVE*(value-64)))); // 
+    filtFreq = 30+(10000/(1+exp(-S_CURVE*(value-64)))); // 
     //filtFreq = value/2.5*AUDIO_SAMPLE_RATE_EXACT/127.;
     updateFilter();
     break;
   case CC_FLT_RES: // filter resonance
-    filtReso = value*4.1/127.+2;
+    filtReso = value * DIV127 * 5;
     updateFilter();
     break;
   case CC_FLT_ATT: // filter attenuation
@@ -992,14 +1001,17 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     case 0:
       polyOn = true;
       portamentoOn = false;
+      velocityOn = true;
       break;
     case 1:
       polyOn = false;
       portamentoOn = false;
+      velocityOn = false;
       break;
     case 2:
       polyOn = false;
       portamentoOn = true;
+      velocityOn = false;
       break;
     default: // cycle POLY, MONO, PORTAMENTO
     {
@@ -1181,7 +1193,10 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     if (value == 0) chorusOn = false;
     else chorusOn = true;
     updatePan();
-    break;
+    break;   
+  case CC_FILTER_DRIVE:
+    filtDrive = 1 + (value * DIV127 * 9);
+    updateFilter();
   default:
 #if SYNTH_DEBUG > 0
     SYNTH_SERIAL.print("Unhandled Control Change: channel ");
@@ -1439,6 +1454,8 @@ void setup() {
   AudioMemory(AMEMORY);
   sgtl5000_1.enable();
   sgtl5000_1.volume(masterVolume);
+  sgtl5000_1.lineOutLevel(29,29);
+  sgtl5000_1.unmuteLineout();
 
   {
     Oscillator *o=oscs,*end=oscs+NVOICES;
@@ -1475,7 +1492,7 @@ void setup() {
   biquad7.setHighpass(0,oscHighpass,0.7071);
   biquad7b.setHighpass(0,oscHighpass,0.7071);
   biquad8.setHighpass(0,oscHighpass,0.7071);
-  biquad8b.setHighpass(0,oscHighpass,0.7071);  
+  biquad8b.setHighpass(0,oscHighpass,0.7071); 
   
   usbMIDI.setHandleNoteOff(OnNoteOff);
   usbMIDI.setHandleNoteOn(OnNoteOn);
@@ -1518,7 +1535,7 @@ if (SERIALMIDI) {
   for (int presetno=0; presetno < NUM_PRESETS; presetno++){
     presets[presetno] = {
       currentProgram, currentOsc2Program, polyOn, omniOn, velocityOn, channelVolume, oscBalance, panorama, pitchScale, octCorr, 
-      osc2Octave, osc2Detune, filterMode, filtFreq, filtReso, filtAtt, fltLfoDepth, fltLfoRate, pitchLfoRate, pitchLfoDepth, pwmLfoRate, envOn,
+      osc2Octave, osc2Detune, filterMode, filtFreq, filtReso, filtAtt, filtDrive, fltLfoDepth, fltLfoRate, pitchLfoRate, pitchLfoDepth, pwmLfoRate, envOn,
       envDelay, envAttack, envHold, envDecay, envSustain, envRelease, fltEnvOn, fltEnvInvert, fltEnvDelay, fltEnvAttack, fltEnvHold, fltEnvDecay,
       fltEnvSustain, fltEnvRelease, fltEnvDepth, portamentoOn, portamentoTime
     };
