@@ -30,6 +30,8 @@ public:
 		y_c = 0;
 		y_d = 0;
 		y_d_1 = 0;
+    state_lowpass = 0;
+    state_bandpass = 0;
 	}
 	void resonance(float qi) {
 		if (qi < 0.7) qi = 0.7;
@@ -58,6 +60,8 @@ public:
 private:
 	void update_fixed(const int16_t *in,int16_t *lp);
 	void update_variable(const int16_t *in, const int16_t *ctl,	int16_t *lp);
+  int32_t state_lowpass;
+  int32_t state_bandpass;
 	audio_block_t *inputQueueArray[2];
 };
 
