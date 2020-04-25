@@ -372,7 +372,8 @@ inline void updateVolume() {
 }
 
 inline void updatePan() {
-  float norm  = (polyOn && !portamentoOn) ? GAIN_POLY : GAIN_MONO;
+  //float norm  = (polyOn && !portamentoOn) ? GAIN_POLY : GAIN_MONO;
+  float norm  = (polyOn) ? GAIN_POLY : GAIN_MONO;
   float left=norm, right=norm;
   if (panorama < 0.5) right *= 2*panorama;
   else left *= 2*(1-panorama);
@@ -670,11 +671,20 @@ void setup() {
 #if SYNTH_DEBUG > 0
   SYNTH_SERIAL.begin(115200);
 #endif
+
+  pinMode(2,OUTPUT);
+  pinMode(3,OUTPUT);
+  pinMode(4,OUTPUT); 
+  pinMode(5,OUTPUT);
+
+  /*Initialize hw controls*/
+  setupMux();
+  checkHwControlValues(0);
   
   AudioMemory(AMEMORY);
   sgtl5000_1.enable();
   sgtl5000_1.volume(masterVolume);
-  sgtl5000_1.lineOutLevel(29,29);
+  sgtl5000_1.lineOutLevel(13,13);
   sgtl5000_1.unmuteLineout();
 
   {
@@ -791,7 +801,8 @@ void loop() {
 if (SERIALMIDI) MIDI.read();
 
   updateMasterVolume();
-  updatePortamento();  
+  updatePortamento();
+  checkHwControlValues(1);
 
 #if SYNTH_DEBUG > 0
   performanceCheck();

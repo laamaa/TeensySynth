@@ -1,8 +1,11 @@
+#ifndef TEENSYSYNTH_H
+#define TEENSYSNTH_H
+
 // set SYNTH_DEBUG to enable debug logging (1=most,2=all messages)
-#define SYNTH_DEBUG 1
+#define SYNTH_DEBUG 2
 
 // define MIDI channel
-#define SYNTH_MIDICHANNEL 3
+#define SYNTH_MIDICHANNEL 5
 
 // inital poly mode (POLY, MONO or PORTAMENTO)
 #define SYNTH_INITIALMODE POLY
@@ -79,7 +82,7 @@
 #define CC_SAVE_PRESET 48
 #define CC_CHORUS_TOGGLE 49
 #define CC_PITCH_LFO_MODE 50
-#define CC_FILTER_DRIVE 51
+#define CC_FILTER_DRIVE 102
 #define CC_SUSTAIN 64
 #define CC_PORTAMENTO 65
 #define CC_PORTAMENTO_CONTROL 84
@@ -125,16 +128,16 @@ Oscillator oscs[NVOICES] = {
   { &waveform8, &waveform8b, &waveform_sum_8, &filter8, &mixer8, &flt_sum_8, &envelope8, &flt_env_8, -1, 0 },
 };
 
-#define NPROGS 8
+#define NPROGS 7
 uint8_t progs[NPROGS] = {
+  WAVEFORM_SAWTOOTH,
   WAVEFORM_SINE,
   WAVEFORM_SQUARE,
   WAVEFORM_TRIANGLE,
   WAVEFORM_TRIANGLE_VARIABLE,
-  WAVEFORM_SAWTOOTH,
   WAVEFORM_PULSE,
   WAVEFORM_SAMPLE_HOLD,
-  WAVEFORM_ARBITRARY,
+//  WAVEFORM_ARBITRARY,
 };
 
 enum FilterMode_t {
@@ -211,7 +214,7 @@ struct Preset {
 //////////////////////////////////////////////////////////////////////
 const float DIV127 = (1.0 / 127.0);
 
-float   masterVolume   = 0.8;
+float   masterVolume   = 1;
 uint8_t currentProgram = WAVEFORM_PULSE;
 uint8_t currentOsc2Program = WAVEFORM_TRIANGLE;
 
@@ -285,3 +288,4 @@ uint8_t selectedPreset;
 
 //allocate memory for presets
 Preset presets[NUM_PRESETS];
+#endif
