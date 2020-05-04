@@ -2,7 +2,7 @@
 #define TEENSYSNTH_H
 
 // set SYNTH_DEBUG to enable debug logging (1=most,2=all messages)
-#define SYNTH_DEBUG 2
+#define SYNTH_DEBUG 1
 
 // define MIDI channel
 #define SYNTH_MIDICHANNEL 5

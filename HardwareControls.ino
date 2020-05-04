@@ -1,9 +1,9 @@
 /* Knob layout */
 enum {
-  CTL_OSC1,    CTL_OSC2,     CTL_PWM,     CTL_PORTA,     CTL_VOL,
-  CTL_OSC_BAL, CTL_OSC2_OCT, CTL_OSC2_FT, CTL_LFO1_RATE, CTL_LFO1_DEPTH,
-  CTL_AMP_ATK, CTL_AMP_DEC,  CTL_FLT_ATK, CTL_FLT_DEC,   CTL_LFO2_RATE,  CTL_LFO2_DEPTH,
-  CTL_FLT_CUT, CTL_FLT_RES, CTL_FLTENV_DEPTH, CTL_FLT_SUS, CTL_AMP_REL, CTL_AMP_SUS, 
+  CTL_OSC1,    CTL_OSC2,     CTL_PWM,          CTL_PORTA,     CTL_VOL,
+  CTL_OSC_BAL, CTL_OSC2_OCT, CTL_OSC2_FT,      CTL_LFO1_RATE, CTL_LFO1_DEPTH, //CHORUS SWITCH
+  CTL_AMP_ATK, CTL_AMP_DEC,  CTL_AMP_SUS,      CTL_AMP_REL,   CTL_LFO2_RATE,  CTL_LFO2_DEPTH,
+  CTL_FLT_CUT, CTL_FLT_RES,  CTL_FLTENV_DEPTH, CTL_FLT_SUS,   CTL_FLT_DEC,    CTL_FLT_ATK, //whoops, the multiplexer pins were in reverse order. fix it in the software as usual.
   CTL_MODE, CTL_CHORUS
 };
 
@@ -29,7 +29,7 @@ int muxChannel[16][4]={
 int controlPin[4] = {2,3,4,5};
 
 int currentCtlValue[24] = {0};
-uint8_t potThreshold[22] = {10};
+uint8_t potThreshold[22] = {10}; //thresholds for pot value changes before actually doing anything, helps tackle noisy pots.
 
 int readMux(int ch)
 {
@@ -181,15 +181,14 @@ void checkHwControlValues(uint8_t update)
     if (ctlValue < 15) ctlValue = 0;
     if ((ctlValue == 1023 && currentCtlValue[i] != 1023) || ctlValue > currentCtlValue[i]+potThreshold[i] || ctlValue < currentCtlValue[i]-potThreshold[i]) {
       #if SYNTH_DEBUG > 1
-        Serial.print("Pot update, num: ");
-        Serial.print(i);
-        Serial.print(", value: ");
-        Serial.print(ctlValue);
-        Serial.print(" currentvalue: ");
-        Serial.print(currentCtlValue[i]);
-        Serial.print(" pot threshold: ");
-        Serial.print(potThreshold[i]);
-        Serial.print("\n");
+        SYNTH_SERIAL.print("Pot update, num: ");
+        SYNTH_SERIAL.print(i);
+        SYNTH_SERIAL.print(", value: ");
+        SYNTH_SERIAL.print(ctlValue);
+        SYNTH_SERIAL.print(" currentvalue: ");
+        SYNTH_SERIAL.print(currentCtlValue[i]);
+        SYNTH_SERIAL.print(" pot threshold: ");
+        SYNTH_SERIAL.println(potThreshold[i]);
       #endif
       if (update == 1) {
         if (ctlValue < currentCtlValue[i]+50 && ctlValue > currentCtlValue[i]-50) {
@@ -202,15 +201,12 @@ void checkHwControlValues(uint8_t update)
   for (int i=22; i<24; i++) {
     int ctlValue = (i == 22) ? !digitalRead(9) : digitalRead(17); //wires on switch in pin9 are inverted...
     if (ctlValue != currentCtlValue[i]) {
-      #if SYNTH_DEBUG > 0
-        Serial.print("SW update, num: ");
-        Serial.print(i);
-        Serial.print(", value: ");
-        Serial.print(ctlValue);
-
-        Serial.print("\n");
+      #if SYNTH_DEBUG > 1
+        SYNTH_SERIAL.print("SW update, num: ");
+        SYNTH_SERIAL.print(i);
+        SYNTH_SERIAL.print(", value: ");
+        SYNTH_SERIAL.println(ctlValue);
       #endif
-      
       currentCtlValue[i] = ctlValue;
       if (update == 1) updateSynthControl(i, ctlValue);
     }

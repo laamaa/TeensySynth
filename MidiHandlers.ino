@@ -455,6 +455,10 @@ void OnPitchChange(uint8_t channel, int pitch) {
 }
 
 void OnProgramChange(uint8_t channel, uint8_t program) {
+  if (channel == SYNTH_MIDICHANNEL && program <= NUM_PRESETS) {
+    selectedPreset = program;
+    loadPreset(program);
+  }
 }
 
 void OnAfterTouch(uint8_t channel, uint8_t pressure) {
