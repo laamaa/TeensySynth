@@ -204,14 +204,14 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     filtAtt = value/127.;
     updateFilterMode();
     break;
-  case CC_FLT_MODE: // filter mode
+/*  case CC_FLT_MODE: // filter mode
     if (value < FILTERMODE_N) {
       filterMode = FilterMode_t(value);
     } else {
       filterMode = FilterMode_t((filterMode+1)%FILTERMODE_N);
     }
     updateFilterMode();
-    break;
+    break; */
   case CC_POLY_MODE: // poly mode
     switch (value) {
     case 0:
@@ -315,14 +315,14 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
     fltEnvSustain = value * DIV127; //0-1
     updateFilterEnvelope();
     break;
-  case CC_FLT_ENV_REL:
+/*  case CC_FLT_ENV_REL:
     fltEnvRelease = value * DIV127 * 2000 +5; //5-1000ms
     updateFilterEnvelope();
-    break;
-  case CC_FLT_ENV_INVERT:
+    break; */
+/*  case CC_FLT_ENV_INVERT:
     fltEnvInvert = !fltEnvInvert;
     updateFilterEnvelopeMode();
-    break;
+    break; */
   case CC_FLT_ENV_DEPTH:
     fltEnvDepth = value * DIV127;
     updateFilterEnvelopeMode();
@@ -338,9 +338,9 @@ void OnControlChange(uint8_t channel, uint8_t control, uint8_t value) {
   case CC_PORTAMENTO_CONTROL: // portamento control (start note)
     portamentoPos = value;
     break;
-  case CC_RESET_ALL: // controller reset
+/*  case CC_RESET_ALL: // controller reset
     resetAll();
-    break;
+    break; */
   case CC_ALL_NOTES_OFF: // all notes off
     allOff();
     break;
