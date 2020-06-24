@@ -377,10 +377,10 @@ inline void updatePan() {
   float left=norm, right=norm;
   if (panorama < 0.5) right *= 2*panorama;
   else left *= 2*(1-panorama);
-  if (chorusOn) {
+/*  if (chorusOn) {
     left = left/2;
     right = right/2;
-  }
+  } */
   for (uint8_t i=0; i<4; ++i){
     mixerL.gain(i,left);
     mixerR.gain(i,right);
@@ -686,6 +686,10 @@ void setup() {
   sgtl5000_1.volume(masterVolume);
   sgtl5000_1.lineOutLevel(13,13);
   sgtl5000_1.unmuteLineout();
+  sgtl5000_1.audioPostProcessorEnable();
+  sgtl5000_1.autoVolumeControl(1,1,1,0,18,6);
+  sgtl5000_1.autoVolumeEnable();
+  
 
   {
     Oscillator *o=oscs,*end=oscs+NVOICES;

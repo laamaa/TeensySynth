@@ -2,10 +2,10 @@
 #define TEENSYSNTH_H
 
 // set SYNTH_DEBUG to enable debug logging (1=most,2=all messages)
-#define SYNTH_DEBUG 1
+#define SYNTH_DEBUG 0
 
 // define MIDI channel
-#define SYNTH_MIDICHANNEL 5
+#define SYNTH_MIDICHANNEL 7
 
 // inital poly mode (POLY, MONO or PORTAMENTO)
 #define SYNTH_INITIALMODE POLY
@@ -15,7 +15,7 @@
 
 // gain at oscillator/filter input stage (1:1)
 // keep low so filter does not saturate with resonance
-#define GAIN_OSC 0.3
+#define GAIN_OSC 0.08
 
 // gain in final mixer stage for polyphonic mode (4:1)
 // (0.25 is the safe value but larger sounds better :) )
