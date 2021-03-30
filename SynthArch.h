@@ -2,6 +2,7 @@
 #define SYNTHARCH_H
 
 #include <Audio.h>
+#include "effect_ensemble.h"
 
 // GUItool: begin automatically generated code
 AudioSynthWaveform       pitch_lfo;      //xy=65,355
@@ -74,14 +75,14 @@ AudioFilterStateVariable filter6;        //xy=1391,548
 AudioFilterStateVariable filter7;        //xy=1393,621
 AudioFilterStateVariable filter8;        //xy=1396,695
 */
-AudioFilterMoog filter1;        //xy=1384,165
-AudioFilterMoog filter2;        //xy=1387,244
-AudioFilterMoog filter3;        //xy=1389,319
-AudioFilterMoog filter4;        //xy=1389,398
-AudioFilterMoog filter5;        //xy=1390,467
-AudioFilterMoog filter6;        //xy=1391,548
-AudioFilterMoog filter7;        //xy=1393,621
-AudioFilterMoog filter8;        //xy=1396,695
+AudioFilterLadder filter1;        //xy=1384,165
+AudioFilterLadder filter2;        //xy=1387,244
+AudioFilterLadder filter3;        //xy=1389,319
+AudioFilterLadder filter4;        //xy=1389,398
+AudioFilterLadder filter5;        //xy=1390,467
+AudioFilterLadder filter6;        //xy=1391,548
+AudioFilterLadder filter7;        //xy=1393,621
+AudioFilterLadder filter8;        //xy=1396,695
 
 AudioMixer4              mixer2;         //xy=1560,250
 AudioMixer4              mixer3;         //xy=1560,320
@@ -108,6 +109,9 @@ AudioMixer4              mix_fx;
 AudioMixer4              mixerL;         //xy=2280,280
 AudioMixer4              mixerR;         //xy=2283,485
 AudioEffectEnsemble      ensemble;
+AudioFilterBiquad        enbiquadpre;
+AudioFilterBiquad        enbiquad1;        //xy=438,132
+AudioFilterBiquad        enbiquad2;        //xy=438,132
 AudioOutputI2S           i2s1;           //xy=2761,355
 AudioConnection          patchCord1(pitch_lfo, 0, waveform1, 0);
 AudioConnection          patchCord2(pitch_lfo, 0, waveform2, 0);
@@ -271,9 +275,12 @@ AudioConnection          patchCord159(envmixer2, 0, env_sum, 1);
 AudioConnection          patchCord160(envmixer3, 0, env_sum, 2);
 AudioConnection          patchCord161(envmixer4, 0, env_sum, 3);
 
-AudioConnection          patchCord162(env_sum, 0, ensemble, 0);
-AudioConnection          patchCord163(ensemble,0,mixerL,1); 
-AudioConnection          patchCord164(ensemble,1,mixerR,1);
+AudioConnection          patchCord171(env_sum, 0, enbiquadpre, 0);
+AudioConnection          patchCord172(enbiquadpre, 0, ensemble, 0);
+AudioConnection          patchCord163(ensemble,0,enbiquad1,0); 
+AudioConnection          patchCord164(ensemble,1,enbiquad2,0);
+AudioConnection          patchCord169(enbiquad1,0,mixerL,1); 
+AudioConnection          patchCord170(enbiquad2,0,mixerR,1);
 
 AudioConnection          patchCord165(env_sum, 0, mixerL, 0);
 AudioConnection          patchCord166(env_sum, 0, mixerR, 0);

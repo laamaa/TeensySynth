@@ -2,7 +2,7 @@
 #define TEENSYSNTH_H
 
 // set SYNTH_DEBUG to enable debug logging (1=most,2=all messages)
-#define SYNTH_DEBUG 0
+#define SYNTH_DEBUG 1
 
 // define MIDI channel
 #define SYNTH_MIDICHANNEL 7
@@ -100,7 +100,7 @@ struct Oscillator {
   AudioSynthWaveformModulated* wf2;
   AudioMixer4*                 wf_sum;
   //AudioFilterStateVariable*    filt;
-  AudioFilterMoog*    filt;
+  AudioFilterLadder*    filt;
   AudioMixer4*                 mix;
   AudioMixer4*                 flt_sum;
   AudioEffectEnvelope*         env;
@@ -126,12 +126,12 @@ Oscillator oscs[NVOICES] = {
 
 #define NPROGS 7
 uint8_t progs[NPROGS] = {
-  WAVEFORM_SAWTOOTH,
+  WAVEFORM_BANDLIMIT_SAWTOOTH,
   WAVEFORM_SINE,
-  WAVEFORM_SQUARE,
+  WAVEFORM_BANDLIMIT_SQUARE,
   WAVEFORM_TRIANGLE,
   WAVEFORM_TRIANGLE_VARIABLE,
-  WAVEFORM_PULSE,
+  WAVEFORM_BANDLIMIT_PULSE,
   WAVEFORM_SAMPLE_HOLD,
 //  WAVEFORM_ARBITRARY,
 };

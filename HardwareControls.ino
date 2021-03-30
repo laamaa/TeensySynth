@@ -112,7 +112,7 @@ void updateSynthControl(int ctl, int value){
       updateEnvelope();    
       break;
     case CTL_FLT_ATK:
-      fltEnvAttack = powf((value/101.53),3);
+      fltEnvAttack = 2*powf((value/101.53),3);
       updateFilterEnvelope();    
       break;
     case CTL_FLT_DEC:
@@ -144,11 +144,11 @@ void updateSynthControl(int ctl, int value){
       updateFilterEnvelopeMode();    
       break;
     case CTL_FLT_CUT:
-      filtFreq = 30+12*powf((value/101.53),3);
+      filtFreq = 80+12*powf((value/101.53),3);
       updateFilter();
       break;
     case CTL_FLT_RES:
-      filtReso = (value / 1024.) * 4;
+      filtReso = (value / 1024.) * 1.2;
       updateFilter();
       break;
     case CTL_MODE:

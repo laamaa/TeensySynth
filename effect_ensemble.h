@@ -28,11 +28,11 @@
 #define ENSEMBLE_BUFFER_SIZE 1024
 // to put a channel 90 degrees out of LFO phase for stereo spread
 #define PHASE_90 367
-#define LFO_SIZE 1470
+#define LFO_SIZE 7350
 #define COUNTS_PER_LFO 200
 
 // LFO wavetable parameters
-#define LFO_SAMPLES 1470
+#define LFO_SAMPLES 7350
 #define LFO_RANGE 100
 
 class AudioEffectEnsemble : public AudioStream

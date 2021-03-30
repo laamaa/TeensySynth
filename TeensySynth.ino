@@ -1,7 +1,6 @@
 #include <Audio.h>
 #include <EEPROM.h>
 #include <MIDI.h>
-#include "filter_moog.h"
 #include "effect_ensemble.h"
 
 //Defines and global variables moved to a separate file
@@ -189,7 +188,7 @@ inline void updateFilter() {
   do {
     o->filt->frequency(filtFreq);
     o->filt->resonance(filtReso);
-    o->filt->drive(filtDrive);
+    o->filt->inputDrive(filtDrive);
   } while (++o < end);
 }
 
@@ -282,7 +281,7 @@ void resetAll() {
   filtFreq = 12000.;
   filtReso = 2;
   filtAtt  = 1.;
-  filtDrive = 2;
+  filtDrive = 1.;
 
   // filter lfo
   fltLfoDepth = 0;
@@ -699,6 +698,7 @@ void setup() {
       o->flt_sum->gain(0,1);
       o->flt_sum->gain(1,1);
       o->filt->octaveControl(6);
+      o->filt->interpolationMethod(LADDER_FILTER_INTERPOLATION_FIR_POLY);
       o->wf_sum->gain(0,0.5);
       o->wf_sum->gain(1,0.5);
     } while(++o < end);
@@ -726,7 +726,13 @@ void setup() {
   biquad7.setHighpass(0,oscHighpass,0.7071);
   biquad7b.setHighpass(0,oscHighpass,0.7071);
   biquad8.setHighpass(0,oscHighpass,0.7071);
-  biquad8b.setHighpass(0,oscHighpass,0.7071); 
+  biquad8b.setHighpass(0,oscHighpass,0.7071);
+
+  const int choruslowpass=12000;
+  enbiquadpre.setLowpass(0,choruslowpass,0.7071);
+  enbiquad1.setLowpass(0,choruslowpass,0.7071); 
+  enbiquad2.setLowpass(0,choruslowpass,0.7071);
+ 
   
   usbMIDI.setHandleNoteOff(OnNoteOff);
   usbMIDI.setHandleNoteOn(OnNoteOn);
@@ -753,9 +759,10 @@ if (SERIALMIDI) {
   //MIDI.setHandleTimeCodeQuarterFrame(OnTimeCodeQFrame);
 }
 
-  delay(1000);
+  
 
 #if SYNTH_DEBUG > 0
+  delay(1000);
   SYNTH_SERIAL.println();
   SYNTH_SERIAL.println("TeensySynth v0.1");
 #ifdef USB_MIDI
