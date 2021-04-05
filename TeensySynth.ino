@@ -549,66 +549,6 @@ void performanceCheck() {
   }
 }
 
-void printInfo() {
-  SYNTH_SERIAL.println();
-  SYNTH_SERIAL.print("Master Volume:        ");
-  SYNTH_SERIAL.println(masterVolume);
-  SYNTH_SERIAL.print("Current Program:      ");
-  SYNTH_SERIAL.println(currentProgram);
-  SYNTH_SERIAL.print("Poly On:              ");
-  SYNTH_SERIAL.println(polyOn);
-  SYNTH_SERIAL.print("Omni On:              ");
-  SYNTH_SERIAL.println(omniOn);
-  SYNTH_SERIAL.print("Velocity On:          ");
-  SYNTH_SERIAL.println(velocityOn);
-  SYNTH_SERIAL.println();
-  SYNTH_SERIAL.print("Sustain Pressed:      ");
-  SYNTH_SERIAL.println(sustainPressed);
-  SYNTH_SERIAL.print("Channel Volume:       ");
-  SYNTH_SERIAL.println(channelVolume);
-  SYNTH_SERIAL.print("Panorama:             ");
-  SYNTH_SERIAL.println(panorama);
-  SYNTH_SERIAL.print("PWM Rate:             ");
-  SYNTH_SERIAL.println(pwmLfoRate);
-  SYNTH_SERIAL.print("Pitch Bend:           ");
-  SYNTH_SERIAL.println(pitchBend);
-  SYNTH_SERIAL.println();
-  SYNTH_SERIAL.print("Filter Mode:          ");
-  SYNTH_SERIAL.println(filterMode);
-  SYNTH_SERIAL.print("Filter Frequency:     ");
-  SYNTH_SERIAL.println(filtFreq);
-  SYNTH_SERIAL.print("Filter Resonance:     ");
-  SYNTH_SERIAL.println(filtReso);
-  SYNTH_SERIAL.print("Filter Attenuation:   ");
-  SYNTH_SERIAL.println(filtAtt);
-  SYNTH_SERIAL.println();
-  SYNTH_SERIAL.print("Envelope On:          ");
-  SYNTH_SERIAL.println(envOn);
-  SYNTH_SERIAL.print("Envelope Delay:       ");
-  SYNTH_SERIAL.println(envDelay);
-  SYNTH_SERIAL.print("Envelope Attack:      ");
-  SYNTH_SERIAL.println(envAttack);
-  SYNTH_SERIAL.print("Envelope Hold:        ");
-  SYNTH_SERIAL.println(envHold);
-  SYNTH_SERIAL.print("Envelope Decay:       ");
-  SYNTH_SERIAL.println(envDecay);
-  SYNTH_SERIAL.print("Envelope Sustain:     ");
-  SYNTH_SERIAL.println(envSustain);
-  SYNTH_SERIAL.print("Envelope Release:     ");
-  SYNTH_SERIAL.println(envRelease);
-  SYNTH_SERIAL.println();
-  SYNTH_SERIAL.print("Portamento On:        ");
-  SYNTH_SERIAL.println(portamentoOn);
-  SYNTH_SERIAL.print("Portamento Time:      ");
-  SYNTH_SERIAL.println(portamentoTime);
-  SYNTH_SERIAL.print("Portamento Step:      ");
-  SYNTH_SERIAL.println(portamentoStep);
-  SYNTH_SERIAL.print("Portamento Direction: ");
-  SYNTH_SERIAL.println(portamentoDir);
-  SYNTH_SERIAL.print("Portamento Position:  ");
-  SYNTH_SERIAL.println(portamentoPos);
-}
-
 void selectCommand(char c) {
   switch (c) {
   case '\r':
@@ -634,10 +574,6 @@ void selectCommand(char c) {
     // reset parameters
     resetAll();
     break;
-  case 'i':
-    // print info
-    printInfo();
-    break;
   case '\t':
     // reboot Teensy
     *(uint32_t*)0xE000ED0C = 0x5FA0004;
@@ -660,8 +596,6 @@ void selectCommand(char c) {
 }
 
 #endif
-
-#include "saw.h"
 
 //////////////////////////////////////////////////////////////////////
 // setup() and loop()

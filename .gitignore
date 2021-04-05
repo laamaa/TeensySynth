@@ -1,7 +1,0 @@
-*~
-/build
-/compilation.out
-/schematics/*.bak
-/schematics/*.xml
-/schematics/*.lib
-/schematics/*.kicad_pcb
